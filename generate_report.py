@@ -23,7 +23,7 @@ def generate_report(file_path):
             'Boxer', 'Jeans', 'Denim', 'Flannel', 'Polo', 
             'Panjabi', 'Trousers', 'Twill', 'Mask', 'Bag', 
             'Bottle', 'Contrast', 'Turtleneck', 'Wallet', 
-            'Kaftan', 'Active Weare'
+            'Kaftan', 'Active Wear', 'Sweatshirt'
         ]
         
         for cat in specific_categories:
