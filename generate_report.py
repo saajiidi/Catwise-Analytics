@@ -20,7 +20,7 @@ def generate_report(file_path):
         # We check these first because a "Polo Shirt" should be "Polo"
         # and a "Flannel Shirt" should be "Flannel".
         specific_categories = [
-            'Boxer', 'Jeans', 'Denim', 'Flannel', 'Polo', 
+            'Boxer', 'Jeans', 'Flannel', 'Denim', 'Polo', 
             'Panjabi', 'Trousers', 'Twill', 'Mask', 'Bag', 
             'Bottle', 'Contrast', 'Turtleneck', 'Wallet', 
             'Kaftan', 'Active Wear', 'Sweatshirt'

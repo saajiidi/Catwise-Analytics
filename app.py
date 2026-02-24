@@ -40,7 +40,7 @@ def get_category(name):
     
     # Priority 1: Specific Categories
     specific_categories = [
-        'Boxer', 'Jeans', 'Denim', 'Flannel', 'Polo', 
+        'Boxer', 'Jeans', 'Flannel', 'Denim', 'Polo', 
         'Panjabi', 'Trousers', 'Twill', 'Mask', 'Bag', 
         'Bottle', 'Contrast', 'Turtleneck', 'Wallet', 
         'Kaftan', 'Active Wear', 'Sweatshirt'
