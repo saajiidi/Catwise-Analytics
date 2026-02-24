@@ -43,7 +43,7 @@ def get_category(name):
         'Boxer', 'Jeans', 'Denim', 'Flannel', 'Polo', 
         'Panjabi', 'Trousers', 'Twill', 'Mask', 'Bag', 
         'Bottle', 'Contrast', 'Turtleneck', 'Wallet', 
-        'Kaftan', 'Active Weare'
+        'Kaftan', 'Active Wear', 'Sweatshirt'
     ]
     
     for cat in specific_categories:
