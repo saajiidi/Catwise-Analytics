@@ -123,7 +123,8 @@ def find_columns(df):
     mapping = {
         'name': ['item name', 'product name', 'product', 'item', 'title', 'description', 'name'],
         'cost': ['item cost', 'price', 'unit price', 'cost', 'rate', 'mrp', 'selling price'],
-        'qty': ['quantity', 'qty', 'units', 'sold', 'count', 'total quantity']
+        'qty': ['quantity', 'qty', 'units', 'sold', 'count', 'total quantity'],
+        'date': ['date', 'order date', 'month', 'time', 'created at']
     }
     
     found = {}
@@ -157,6 +158,23 @@ def process_data(df, selected_cols):
         df['Internal_Cost'] = pd.to_numeric(df[selected_cols['cost']], errors='coerce').fillna(0)
         df['Internal_Qty'] = pd.to_numeric(df[selected_cols['qty']], errors='coerce').fillna(0)
         
+        # Date processing for filename
+        timeframe_suffix = ""
+        if 'date' in selected_cols and selected_cols['date'] in df.columns:
+            try:
+                # Try to convert to datetime
+                dates = pd.to_datetime(df[selected_cols['date']], errors='coerce').dropna()
+                if not dates.empty:
+                    # If all dates are in the same month, use Month Name, otherwise use Range
+                    if dates.dt.to_period('M').nunique() == 1:
+                        timeframe_suffix = dates.iloc[0].strftime("%B_%Y")
+                    else:
+                        timeframe_suffix = f"{dates.min().strftime('%d%b')}_to_{dates.max().strftime('%d%b_%y')}"
+            except Exception:
+                # If date parsing fails, just use the first non-null value as a fallback
+                val = str(df[selected_cols['date']].dropna().iloc[0]) if not df[selected_cols['date']].dropna().empty else ""
+                timeframe_suffix = val.replace("/", "-").replace(" ", "_")[:20]
+
         # Treatment for anomalies
         if (df['Internal_Qty'] < 0).any():
             log_system_event("DATA_ISSUE", "Found negative quantities, converted to 0.")
@@ -186,11 +204,11 @@ def process_data(df, selected_cols):
         top_items.columns = ['Product Name', 'Total Qty', 'Total Amount', 'Category']
         top_items = top_items.sort_values('Total Amount', ascending=False)
         
-        return drilldown, summary, top_items
+        return drilldown, summary, top_items, timeframe_suffix
     except Exception as e:
         log_system_event("CRASH", str(e))
         st.error(f"Error in calculation: {e}")
-        return None, None, None
+        return None, None, None, ""
 
 def main():
     st.title("🚀 Sales Performance Dashboard")
@@ -226,18 +244,24 @@ def main():
             st.subheader("🛠️ Column Mapping")
             st.info("We've detected your columns. Please verify or correct them before generating the report.")
             
-            c_sel1, c_sel2, c_sel3 = st.columns(3)
+            c_sel1, c_sel2, c_sel3, c_sel4 = st.columns(4)
             
             def get_col_idx(key):
                 if key in auto_cols and auto_cols[key] in all_cols:
                     return all_cols.index(auto_cols[key])
                 return 0
 
-            mapped_name = c_sel1.selectbox("Product Name Column", all_cols, index=get_col_idx('name'))
-            mapped_cost = c_sel2.selectbox("Price/Cost Column", all_cols, index=get_col_idx('cost'))
-            mapped_qty = c_sel3.selectbox("Quantity Column", all_cols, index=get_col_idx('qty'))
+            mapped_name = c_sel1.selectbox("Product Name", all_cols, index=get_col_idx('name'))
+            mapped_cost = c_sel2.selectbox("Price/Cost", all_cols, index=get_col_idx('cost'))
+            mapped_qty = c_sel3.selectbox("Quantity", all_cols, index=get_col_idx('qty'))
+            mapped_date = c_sel4.selectbox("Date (Optional)", ["None"] + all_cols, index=get_col_idx('date') + 1 if 'date' in auto_cols else 0)
             
-            final_mapping = {'name': mapped_name, 'cost': mapped_cost, 'qty': mapped_qty}
+            final_mapping = {
+                'name': mapped_name, 
+                'cost': mapped_cost, 
+                'qty': mapped_qty,
+                'date': mapped_date if mapped_date != "None" else None
+            }
             
             with st.expander("🔍 Search Raw Data"):
                 search = st.text_input("Product search...")
@@ -245,7 +269,7 @@ def main():
                 else: st.dataframe(df.head(10), use_container_width=True)
 
             if st.button("Generate Dashboard"):
-                drill, summ, top = process_data(df, final_mapping)
+                drill, summ, top, timeframe = process_data(df, final_mapping)
                 if drill is not None:
                     t_qty, t_rev = summ['Total Qty'].sum(), summ['Total Amount'].sum()
                     
@@ -269,7 +293,13 @@ def main():
                         summ.to_excel(wr, sheet_name='Summary', index=False)
                         top.to_excel(wr, sheet_name='Rankings', index=False)
                         drill.to_excel(wr, sheet_name='Details', index=False)
-                    st.download_button("📥 Export Report", data=buf.getvalue(), file_name=f"Report_{uploaded_file.name.split('.')[0]}.xlsx")
+                    
+                    # Generate dynamic filename
+                    base_name = uploaded_file.name.split('.')[0]
+                    file_suffix = f"_{timeframe}" if timeframe else ""
+                    final_filename = f"Report_{base_name}{file_suffix}.xlsx"
+                    
+                    st.download_button("📥 Export Report", data=buf.getvalue(), file_name=final_filename)
                     
         except Exception as e:
             log_system_event("FILE_ERROR", str(e))
