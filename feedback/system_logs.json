@@ -151,5 +151,24 @@
                 "Brown Light-weight Sweater 01 - 2XL"
             ]
         }
+    },
+    {
+        "timestamp": "2026-02-25 10:59:49",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 12734,
+            "samples": [
+                "Ash 2-stripe Joggers - L",
+                "Beige 2-stripe Joggers - M",
+                "Dusty Rose Joggers - XL",
+                "Yellow 2-stripe Joggers - XL",
+                "Dusty Rose Joggers - XL",
+                "Brown Sandy Joggers - L",
+                "Maroon Stripe Joggers - L",
+                "Ash 2-stripe Joggers - L",
+                "Beige 2-stripe Joggers - L",
+                "Dusty Green Joggers - L"
+            ]
+        }
     }
 ]
