@@ -99,7 +99,9 @@ def get_category(name):
         'Active Wear': ['active wear', 'gym', 'jersey', 'sport'],
         'Sweatshirt': ['sweatshirt', 'hoodie', 'pullover'],
         'Jacket': ['jacket', 'outerwear', 'coat'],
-        'Belt': ['belt']
+        'Belt': ['belt'],
+        'Joggers': ['joggers', 'track pant', 'jogger'],
+        'Sweater': ['sweater', 'cardigan', 'knitwear']
     }
     
     for cat, keywords in specific_cats.items():
