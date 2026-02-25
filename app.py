@@ -1,7 +1,14 @@
 import streamlit as st
 import pandas as pd
-import io
+import plotly.express as px
+import os
+import json
+from datetime import datetime
 from io import BytesIO
+
+# Configuration
+FEEDBACK_DIR = "feedback"
+os.makedirs(FEEDBACK_DIR, exist_ok=True)
 
 # Set page configuration
 st.set_page_config(
@@ -13,144 +20,257 @@ st.set_page_config(
 # Custom CSS for premium look
 st.markdown("""
     <style>
-    .main {
-        background-color: #f8f9fa;
-    }
-    .stMetric {
-        background-color: #ffffff;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .stButton>button {
-        width: 100%;
-        border-radius: 5px;
-        height: 3em;
-        background-color: #007bff;
-        color: white;
-    }
+    .main { background-color: #f8f9fa; }
+    .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #007bff; color: white; font-weight: bold; }
+    div[data-testid="stExpander"] { border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     </style>
     """, unsafe_allow_html=True)
 
+def log_system_event(event_type, details):
+    """Logs errors or system events to a JSON file for further analysis."""
+    log_file = os.path.join(FEEDBACK_DIR, "system_logs.json")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    log_entry = {
+        "timestamp": timestamp,
+        "type": event_type,
+        "details": details
+    }
+    
+    try:
+        logs = []
+        if os.path.exists(log_file):
+            with open(log_file, "r") as f:
+                logs = json.load(f)
+        
+        logs.append(log_entry)
+        with open(log_file, "w") as f:
+            json.dump(logs, f, indent=4)
+    except Exception as e:
+        print(f"Logging failed: {e}")
+
+def save_user_feedback(comment):
+    """Saves user comments to a feedback file."""
+    feedback_file = os.path.join(FEEDBACK_DIR, "user_feedback.json")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    feedback_entry = {
+        "timestamp": timestamp,
+        "comment": comment
+    }
+    
+    try:
+        data = []
+        if os.path.exists(feedback_file):
+            with open(feedback_file, "r") as f:
+                data = json.load(f)
+        
+        data.append(feedback_entry)
+        with open(feedback_file, "w") as f:
+            json.dump(data, f, indent=4)
+        return True
+    except Exception:
+        return False
+
 def get_category(name):
+    """Categorizes products based on keywords in their names."""
     name_str = str(name).lower()
     
-    def has_keyword(kw, s):
-        return kw in s
+    def has_any(keywords, text):
+        return any(kw.lower() in text for kw in keywords)
     
-    # Priority 1: Specific Categories
-    specific_categories = [
-        'Boxer', 'Jeans', 'Flannel', 'Denim', 'Polo', 
-        'Panjabi', 'Trousers', 'Twill', 'Mask', 'Bag', 
-        'Bottle', 'Contrast', 'Turtleneck', 'Wallet', 
-        'Kaftan', 'Active Wear', 'Sweatshirt'
-    ]
+    specific_cats = {
+        'Boxer': ['boxer'],
+        'Jeans': ['jeans'],
+        'Denim': ['denim'],
+        'Flannel': ['flannel'],
+        'Polo': ['polo'],
+        'Panjabi': ['panjabi', 'punjabi'],
+        'Trousers': ['trousers', 'pant', 'cargo'],
+        'Twill': ['twill', 'chino'],
+        'Mask': ['mask'],
+        'Bag': ['bag', 'backpack'],
+        'Bottle': ['bottle'],
+        'Contrast': ['contrast'],
+        'Turtleneck': ['turtleneck', 'mock neck'],
+        'Wallet': ['wallet'],
+        'Kaftan': ['kaftan'],
+        'Active Wear': ['active wear', 'gym', 'jersey', 'sport'],
+        'Sweatshirt': ['sweatshirt', 'hoodie', 'pullover'],
+        'Jacket': ['jacket', 'outerwear', 'coat'],
+        'Belt': ['belt']
+    }
     
-    for cat in specific_categories:
-        if has_keyword(cat.lower(), name_str):
+    for cat, keywords in specific_cats.items():
+        if has_any(keywords, name_str):
             return cat
 
-    # Priority 2: FS/HS T-Shirt and Shirt logic
-    is_full_sleeve = has_keyword('full sleeve', name_str)
-    
-    is_tshirt = has_keyword('t-shirt', name_str) or has_keyword('t shirt', name_str)
-    if is_tshirt:
-        return 'FS T-Shirt' if is_full_sleeve else 'HS T-Shirt'
+    fs_keywords = ['full sleeve', 'long sleeve', 'fs', 'l/s']
+    if has_any(['t-shirt', 't shirt', 'tee'], name_str):
+        return 'FS T-Shirt' if has_any(fs_keywords, name_str) else 'HS T-Shirt'
         
-    is_shirt = has_keyword('shirt', name_str)
-    if is_shirt:
-        return 'FS Shirt' if is_full_sleeve else 'HS Shirt'
+    if has_any(['shirt'], name_str):
+        return 'FS Shirt' if has_any(fs_keywords, name_str) else 'HS Shirt'
         
     return 'Others'
 
-def process_data(df):
-    # Ensure necessary columns exist
-    required_cols = ['Item Name', 'Item Cost', 'Quantity']
-    for col in required_cols:
-        if col not in df.columns:
-            st.error(f"Missing required column: {col}")
-            return None
-            
-    # Clean data
-    df['Item Name'] = df['Item Name'].fillna('').astype(str)
-    df['Item Cost'] = pd.to_numeric(df['Item Cost'], errors='coerce').fillna(0)
-    df['Quantity'] = pd.to_numeric(df['Quantity'], errors='coerce').fillna(0)
+def find_columns(df):
+    """Detects primary columns using exact and then partial matching."""
+    mapping = {
+        'name': ['item name', 'product name', 'product', 'item', 'title', 'description', 'name'],
+        'cost': ['item cost', 'price', 'unit price', 'cost', 'rate', 'mrp', 'selling price'],
+        'qty': ['quantity', 'qty', 'units', 'sold', 'count', 'total quantity']
+    }
     
-    # Categorize
-    df['Category'] = df['Item Name'].apply(get_category)
+    found = {}
+    actual_cols = [c.strip() for c in df.columns]
+    lower_cols = [c.lower() for c in actual_cols]
     
-    # Detailed Report
-    report = df.groupby(['Category', 'Item Cost']).agg({
-        'Quantity': 'sum'
-    }).reset_index()
+    # 1. First Pass: Exact Matches (Case Insensitive)
+    for key, aliases in mapping.items():
+        for alias in aliases:
+            if alias in lower_cols:
+                idx = lower_cols.index(alias)
+                found[key] = actual_cols[idx]
+                break
     
-    report.columns = ['Category', 'Price (TK)', 'Total Quantity Sold']
-    report['Total Amount (TK)'] = report['Price (TK)'] * report['Total Quantity Sold']
-    report = report.sort_values(by=['Category', 'Price (TK)'])
-    
-    # Summary
-    summary = report.groupby('Category').agg({
-        'Total Quantity Sold': 'sum',
-        'Total Amount (TK)': 'sum'
-    }).reset_index()
-    
-    return report, summary
+    # 2. Second Pass: Partial Matches for missing keys
+    for key, aliases in mapping.items():
+        if key not in found:
+            for col, l_col in zip(actual_cols, lower_cols):
+                if any(alias in l_col for alias in aliases):
+                    found[key] = col
+                    break
+                    
+    return found
+
+def process_data(df, selected_cols):
+    """Processed data using validated user-selected or auto-detected columns."""
+    try:
+        df = df.copy()
+        # Ensure 'Category' is calculated before grouping
+        df['Internal_Name'] = df[selected_cols['name']].fillna('Unknown Product').astype(str)
+        df['Internal_Cost'] = pd.to_numeric(df[selected_cols['cost']], errors='coerce').fillna(0)
+        df['Internal_Qty'] = pd.to_numeric(df[selected_cols['qty']], errors='coerce').fillna(0)
+        
+        # Treatment for anomalies
+        if (df['Internal_Qty'] < 0).any():
+            log_system_event("DATA_ISSUE", "Found negative quantities, converted to 0.")
+            df.loc[df['Internal_Qty'] < 0, 'Internal_Qty'] = 0
+
+        df['Category'] = df['Internal_Name'].apply(get_category)
+        df['Total Amount'] = df['Internal_Cost'] * df['Internal_Qty']
+        
+        # Track 'Others' for refinement
+        others = df[df['Category'] == 'Others']
+        if len(others) > 0:
+            log_system_event("OTHERS_LOG", {"count": len(others), "samples": others['Internal_Name'].head(10).tolist()})
+
+        # Analytics grouping
+        summary = df.groupby('Category').agg({'Internal_Qty': 'sum', 'Total Amount': 'sum'}).reset_index()
+        summary.columns = ['Category', 'Total Qty', 'Total Amount']
+        
+        total_rev = summary['Total Amount'].sum()
+        total_qty = summary['Total Qty'].sum()
+        if total_rev > 0: summary['Revenue Share (%)'] = (summary['Total Amount'] / total_rev * 100).round(2)
+        if total_qty > 0: summary['Quantity Share (%)'] = (summary['Total Qty'] / total_qty * 100).round(2)
+        
+        drilldown = df.groupby(['Category', 'Internal_Cost']).agg({'Internal_Qty': 'sum', 'Total Amount': 'sum'}).reset_index()
+        drilldown.columns = ['Category', 'Price (TK)', 'Total Qty', 'Total Amount']
+        
+        top_items = df.groupby('Internal_Name').agg({'Internal_Qty': 'sum', 'Total Amount': 'sum', 'Category': 'first'}).reset_index()
+        top_items.columns = ['Product Name', 'Total Qty', 'Total Amount', 'Category']
+        top_items = top_items.sort_values('Total Amount', ascending=False)
+        
+        return drilldown, summary, top_items
+    except Exception as e:
+        log_system_event("CRASH", str(e))
+        st.error(f"Error in calculation: {e}")
+        return None, None, None
 
 def main():
-    st.title("📊 Smart Sales Report Generator")
-    st.markdown("Upload your product list (Excel or CSV) to generate a categorized sales report with price-wise differentiation.")
+    st.title("🚀 Sales Performance Dashboard")
+    
+    # Sidebar Feedback
+    with st.sidebar:
+        st.header("💬 Feedback & Logs")
+        comment = st.text_area("Found an error? Report it here:", placeholder="e.g. 'Polo' items are misclassified...")
+        if st.button("Submit Report"):
+            if save_user_feedback(comment):
+                st.success("Thank you! Feedback saved.")
+            else:
+                st.error("Submission failed.")
+        
+        st.divider()
+        if st.checkbox("View Debug Logs"):
+            log_path = os.path.join(FEEDBACK_DIR, "system_logs.json")
+            if os.path.exists(log_path):
+                with open(log_path, "r") as f: st.json(json.load(f)[-10:])
+            else: st.write("No logs yet.")
 
-    uploaded_file = st.file_uploader("Choose a file", type=['xlsx', 'csv'])
+    uploaded_file = st.file_uploader("Upload Sales Data (Excel or CSV)", type=['xlsx', 'csv'])
 
     if uploaded_file is not None:
         try:
-            if uploaded_file.name.endswith('.csv'):
-                df = pd.read_csv(uploaded_file)
-            else:
-                df = pd.read_excel(uploaded_file)
+            df = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
+            st.success(f"File uploaded: {uploaded_file.name}")
             
-            st.success("File uploaded successfully!")
+            # Smart Column Mapping Selection
+            auto_cols = find_columns(df)
+            all_cols = list(df.columns)
             
-            if st.button("Generate Report"):
-                report_df, summary_df = process_data(df)
-                
-                if report_df is not None:
-                    # Metrics
-                    total_qty = summary_df['Total Quantity Sold'].sum()
-                    total_rev = summary_df['Total Amount (TK)'].sum()
+            st.subheader("🛠️ Column Mapping")
+            st.info("We've detected your columns. Please verify or correct them before generating the report.")
+            
+            c_sel1, c_sel2, c_sel3 = st.columns(3)
+            
+            def get_col_idx(key):
+                if key in auto_cols and auto_cols[key] in all_cols:
+                    return all_cols.index(auto_cols[key])
+                return 0
+
+            mapped_name = c_sel1.selectbox("Product Name Column", all_cols, index=get_col_idx('name'))
+            mapped_cost = c_sel2.selectbox("Price/Cost Column", all_cols, index=get_col_idx('cost'))
+            mapped_qty = c_sel3.selectbox("Quantity Column", all_cols, index=get_col_idx('qty'))
+            
+            final_mapping = {'name': mapped_name, 'cost': mapped_cost, 'qty': mapped_qty}
+            
+            with st.expander("🔍 Search Raw Data"):
+                search = st.text_input("Product search...")
+                if search: st.dataframe(df[df[mapped_name].str.contains(search, case=False, na=False)], use_container_width=True)
+                else: st.dataframe(df.head(10), use_container_width=True)
+
+            if st.button("Generate Dashboard"):
+                drill, summ, top = process_data(df, final_mapping)
+                if drill is not None:
+                    t_qty, t_rev = summ['Total Qty'].sum(), summ['Total Amount'].sum()
                     
-                    col1, col2 = st.columns(2)
-                    col1.metric("Total Quantity Sold", f"{total_qty:,.0f}")
-                    col2.metric("Total Revenue", f"TK {total_rev:,.2f}")
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Sold", f"{t_qty:,.0f}")
+                    c2.metric("Revenue", f"TK {t_rev:,.2f}")
+                    c3.metric("Avg Price", f"TK {(t_rev/t_qty if t_qty > 0 else 0):,.2f}")
                     
                     st.divider()
+                    v1, v2 = st.columns(2)
+                    v1.plotly_chart(px.pie(summ, values='Total Amount', names='Category', hole=0.5, title='Revenue Share', color_discrete_sequence=px.colors.qualitative.Pastel), use_container_width=True)
+                    v2.plotly_chart(px.bar(summ.sort_values('Total Qty', ascending=False), x='Category', y='Total Qty', color='Category', title='Volume by Category', color_discrete_sequence=px.colors.qualitative.Bold), use_container_width=True)
                     
-                    # Display Summary
-                    st.subheader("Summary by Category")
-                    st.dataframe(summary_df, use_container_width=True)
+                    tabs = st.tabs(["📑 Summary", "🏆 Rankings", "🔍 Drilldown"])
+                    with tabs[0]: st.dataframe(summ.sort_values('Total Amount', ascending=False), use_container_width=True, hide_index=True)
+                    with tabs[1]: st.dataframe(top.head(20), use_container_width=True, hide_index=True)
+                    with tabs[2]: st.dataframe(drill.sort_values(['Category', 'Price (TK)']), use_container_width=True, hide_index=True)
                     
-                    # Display Detailed Report
-                    st.subheader("Detailed Price-wise Report")
-                    st.dataframe(report_df, use_container_width=True)
-                    
-                    # Download Section
-                    st.divider()
-                    st.subheader("📥 Download Report")
-                    
-                    buffer = BytesIO()
-                    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-                        report_df.to_excel(writer, sheet_name='Detailed Report', index=False)
-                        summary_df.to_excel(writer, sheet_name='Summary', index=False)
-                    
-                    st.download_button(
-                        label="Download Excel Report",
-                        data=buffer.getvalue(),
-                        file_name="Sales_Report_Formatted.xlsx",
-                        mime="application/vnd.ms-excel"
-                    )
+                    buf = BytesIO()
+                    with pd.ExcelWriter(buf, engine='xlsxwriter') as wr:
+                        summ.to_excel(wr, sheet_name='Summary', index=False)
+                        top.to_excel(wr, sheet_name='Rankings', index=False)
+                        drill.to_excel(wr, sheet_name='Details', index=False)
+                    st.download_button("📥 Export Report", data=buf.getvalue(), file_name=f"Report_{uploaded_file.name.split('.')[0]}.xlsx")
                     
         except Exception as e:
-            st.error(f"Error processing file: {e}")
+            log_system_event("FILE_ERROR", str(e))
+            st.error(f"File error: {e}")
 
 if __name__ == "__main__":
     main()

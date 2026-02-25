@@ -1,0 +1,155 @@
+[
+    {
+        "timestamp": "2026-02-25 10:40:17",
+        "type": "MISSING_COLS",
+        "details": {
+            "available": [
+                "ItemType",
+                "StoreName",
+                "MerchantOrderId",
+                "RecipientName(*)",
+                "RecipientPhone(*)",
+                "RecipientAddress(*)",
+                "RecipientCity(*)",
+                "RecipientZone(*)",
+                "RecipientArea",
+                "AmountToCollect(*)",
+                "ItemQuantity",
+                "ItemWeight",
+                "ItemDesc",
+                "SpecialInstruction"
+            ],
+            "missing": [
+                "name",
+                "cost",
+                "qty"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-02-25 10:40:34",
+        "type": "MISSING_COLS",
+        "details": {
+            "available": [
+                "ItemType",
+                "StoreName",
+                "MerchantOrderId",
+                "RecipientName(*)",
+                "RecipientPhone(*)",
+                "RecipientAddress(*)",
+                "RecipientCity(*)",
+                "RecipientZone(*)",
+                "RecipientArea",
+                "AmountToCollect(*)",
+                "ItemQuantity",
+                "ItemWeight",
+                "ItemDesc",
+                "SpecialInstruction"
+            ],
+            "missing": [
+                "name",
+                "cost",
+                "qty"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-02-25 10:44:23",
+        "type": "MISSING_COLS",
+        "details": {
+            "available": [
+                "Order Number",
+                "Order Date",
+                "First Name (Shipping)",
+                "Phone (Billing)",
+                "Email (Billing)",
+                "State Name (Billing)",
+                "SKU",
+                "Item Name",
+                "Quantity (- Refund)",
+                "Item Cost"
+            ],
+            "missing": [
+                "qty"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-02-25 10:46:15",
+        "type": "MISSING_COLS",
+        "details": {
+            "available": [
+                "Order Number",
+                "Order Date",
+                "First Name (Shipping)",
+                "Phone (Billing)",
+                "Email (Billing)",
+                "State Name (Billing)",
+                "SKU",
+                "Item Name",
+                "Quantity (- Refund)",
+                "Item Cost"
+            ],
+            "missing": [
+                "qty"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-02-25 10:48:13",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 12734,
+            "samples": [
+                "Ash 2-stripe Joggers - L",
+                "Beige 2-stripe Joggers - M",
+                "Dusty Rose Joggers - XL",
+                "Yellow 2-stripe Joggers - XL",
+                "Dusty Rose Joggers - XL",
+                "Brown Sandy Joggers - L",
+                "Maroon Stripe Joggers - L",
+                "Ash 2-stripe Joggers - L",
+                "Beige 2-stripe Joggers - L",
+                "Dusty Green Joggers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-02-25 10:53:50",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 4108,
+            "samples": [
+                "Ash 2-stripe Joggers - L",
+                "Beige 2-stripe Joggers - M",
+                "Dusty Rose Joggers - XL",
+                "Yellow 2-stripe Joggers - XL",
+                "Dusty Rose Joggers - XL",
+                "Brown Sandy Joggers - L",
+                "Maroon Stripe Joggers - L",
+                "Ash 2-stripe Joggers - L",
+                "Beige 2-stripe Joggers - L",
+                "Dusty Green Joggers - L"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-02-25 10:54:24",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 6805,
+            "samples": [
+                "Black Sweater 22 - M",
+                "Greenish Light-weight Sweater 06 - XL",
+                "Black Sweater 15 - XL",
+                "White Sweater 17 - 3XL",
+                "Brown Joggers Double Stripe - L",
+                "Players' Lounge Green Joggers - L",
+                "RedTape Grey Joggers 63 - L",
+                "Players' Lounge Black Joggers - XL",
+                "Brown Light-weight Sweater 01 - 2XL",
+                "Brown Light-weight Sweater 01 - 2XL"
+            ]
+        }
+    }
+]

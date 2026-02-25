@@ -11,4 +11,3 @@ venv/
 # Data (Optional - remove if you want to track Excel files)
 *.xlsx
 *.csv
-!TestFile.xlsx # Keep the test file if desired
