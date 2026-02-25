@@ -170,5 +170,24 @@
                 "Dusty Green Joggers - L"
             ]
         }
+    },
+    {
+        "timestamp": "2026-02-25 11:06:51",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 3143,
+            "samples": [
+                "Blue Athletic Cap (Brand Original)",
+                "Blue Athletic Cap (Brand Original)",
+                "Deers Red Athletic Cap",
+                "Leather Card Holder - Brown",
+                "Unknown Product",
+                "Blue Athletic Cap (Brand Original)",
+                "Blue Athletic Cap (Brand Original)",
+                "Blue Athletic Cap (Brand Original)",
+                "Sandrift Athletic Cap (Brand Original)",
+                "Unknown Product"
+            ]
+        }
     }
 ]
