@@ -91,7 +91,7 @@ def get_category(name):
         'Twill': ['twill', 'chino'],
         'Mask': ['mask'],
         'Bag': ['bag', 'backpack'],
-        'Bottle': ['bottle'],
+        'Water Bottle': ['water bottle'],
         'Contrast': ['contrast'],
         'Turtleneck': ['turtleneck', 'mock neck'],
         'Wallet': ['wallet'],

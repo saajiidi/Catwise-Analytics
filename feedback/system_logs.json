@@ -189,5 +189,54 @@
                 "Unknown Product"
             ]
         }
+    },
+    {
+        "timestamp": "2026-02-25 11:19:43",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 3,
+            "samples": [
+                "Navy Blue Leather Passport Holder",
+                "109-0401-223",
+                "Leather Passport Holder"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-02-25 11:20:10",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 16,
+            "samples": [
+                "Parcel",
+                "Parcel",
+                "Parcel",
+                "Parcel",
+                "Parcel",
+                "Parcel",
+                "Parcel",
+                "Parcel",
+                "Parcel",
+                "Parcel"
+            ]
+        }
+    },
+    {
+        "timestamp": "2026-02-25 11:20:27",
+        "type": "OTHERS_LOG",
+        "details": {
+            "count": 9,
+            "samples": [
+                "109-0402-001",
+                "109-0102-002",
+                "103-0100-120",
+                "109-0102-044",
+                "109-0102-045",
+                "Choco Defined Leather Passport Holder",
+                "109-0402-018",
+                "109-0401-222",
+                "109-0402-016"
+            ]
+        }
     }
 ]
