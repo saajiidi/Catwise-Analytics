@@ -103,6 +103,7 @@ def get_category(name):
         'Belt': ['belt'],
         'Sweater': ['sweater', 'cardigan', 'knitwear'],
         'Passport Holder': ['passport holder'],
+        'Cap': ['cap'],
     }
     
     for cat, keywords in specific_cats.items():
