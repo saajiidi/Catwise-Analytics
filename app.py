@@ -125,7 +125,8 @@ def find_columns(df):
         'name': ['item name', 'product name', 'product', 'item', 'title', 'description', 'name'],
         'cost': ['item cost', 'price', 'unit price', 'cost', 'rate', 'mrp', 'selling price'],
         'qty': ['quantity', 'qty', 'units', 'sold', 'count', 'total quantity'],
-        'date': ['date', 'order date', 'month', 'time', 'created at']
+        'date': ['date', 'order date', 'month', 'time', 'created at'],
+        'order_id': ['order id', 'order #', 'invoice number', 'invoice #', 'order number', 'transaction id', 'id']
     }
     
     found = {}
@@ -205,11 +206,21 @@ def process_data(df, selected_cols):
         top_items.columns = ['Product Name', 'Total Qty', 'Total Amount', 'Category']
         top_items = top_items.sort_values('Total Amount', ascending=False)
         
-        return drilldown, summary, top_items, timeframe_suffix
+        # Basket Size Calculation
+        basket_metrics = {"avg_basket_qty": 0, "avg_basket_value": 0}
+        if 'order_id' in selected_cols and selected_cols['order_id'] in df.columns:
+            order_groups = df.groupby(selected_cols['order_id']).agg({
+                'Internal_Qty': 'sum',
+                'Total Amount': 'sum'
+            })
+            basket_metrics["avg_basket_qty"] = order_groups['Internal_Qty'].mean()
+            basket_metrics["avg_basket_value"] = order_groups['Total Amount'].mean()
+        
+        return drilldown, summary, top_items, timeframe_suffix, basket_metrics
     except Exception as e:
         log_system_event("CRASH", str(e))
         st.error(f"Error in calculation: {e}")
-        return None, None, None, ""
+        return None, None, None, "", {}
 
 def main():
     st.title("🚀 Sales Performance Dashboard")
@@ -245,7 +256,7 @@ def main():
             st.subheader("🛠️ Column Mapping")
             st.info("We've detected your columns. Please verify or correct them before generating the report.")
             
-            c_sel1, c_sel2, c_sel3, c_sel4 = st.columns(4)
+            c_sel1, c_sel2, c_sel3, c_sel4, c_sel5 = st.columns(5)
             
             def get_col_idx(key):
                 if key in auto_cols and auto_cols[key] in all_cols:
@@ -256,12 +267,14 @@ def main():
             mapped_cost = c_sel2.selectbox("Price/Cost", all_cols, index=get_col_idx('cost'))
             mapped_qty = c_sel3.selectbox("Quantity", all_cols, index=get_col_idx('qty'))
             mapped_date = c_sel4.selectbox("Date (Optional)", ["None"] + all_cols, index=get_col_idx('date') + 1 if 'date' in auto_cols else 0)
+            mapped_order = c_sel5.selectbox("Order ID (Optional)", ["None"] + all_cols, index=get_col_idx('order_id') + 1 if 'order_id' in auto_cols else 0)
             
             final_mapping = {
                 'name': mapped_name, 
                 'cost': mapped_cost, 
                 'qty': mapped_qty,
-                'date': mapped_date if mapped_date != "None" else None
+                'date': mapped_date if mapped_date != "None" else None,
+                'order_id': mapped_order if mapped_order != "None" else None
             }
             
             with st.expander("🔍 Search Raw Data"):
@@ -270,14 +283,18 @@ def main():
                 else: st.dataframe(df.head(10), use_container_width=True)
 
             if st.button("Generate Dashboard"):
-                drill, summ, top, timeframe = process_data(df, final_mapping)
+                drill, summ, top, timeframe, basket = process_data(df, final_mapping)
                 if drill is not None:
                     t_qty, t_rev = summ['Total Qty'].sum(), summ['Total Amount'].sum()
                     
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Sold", f"{t_qty:,.0f}")
-                    c2.metric("Revenue", f"TK {t_rev:,.2f}")
-                    c3.metric("Avg Price", f"TK {(t_rev/t_qty if t_qty > 0 else 0):,.2f}")
+                    m1, m2, m3, m4, m5 = st.columns(5)
+                    m1.metric("Sold", f"{t_qty:,.0f}")
+                    m2.metric("Revenue", f"TK {t_rev:,.2f}")
+                    m3.metric("Avg Price", f"TK {(t_rev/t_qty if t_qty > 0 else 0):,.2f}")
+                    
+                    if basket["avg_basket_qty"] > 0:
+                        m4.metric("Avg Basket (Qty)", f"{basket['avg_basket_qty']:.2f}")
+                        m5.metric("Avg Basket (TK)", f"TK {basket['avg_basket_value']:,.2f}")
                     
                     st.divider()
                     v1, v2 = st.columns(2)
