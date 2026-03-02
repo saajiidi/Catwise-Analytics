@@ -85,7 +85,7 @@ def get_category(name):
         'Jeans': ['jeans'],
         'Denim': ['denim'],
         'Flannel': ['flannel'],
-        'Polo': ['polo'],
+        'Polo Shirt': ['polo'],
         'Panjabi': ['panjabi', 'punjabi'],
         'Trousers': ['trousers', 'pant', 'cargo', 'trouser', 'joggers', 'track pant', 'jogger'],
         'Twill Chino': ['twill chino'],
@@ -112,7 +112,7 @@ def get_category(name):
 
     fs_keywords = ['full sleeve', 'long sleeve', 'fs', 'l/s']
     if has_any(['t-shirt', 't shirt', 'tee'], name_str):
-        return 'FS T-Shirt' if has_any(fs_keywords, name_str) else 'HS T-Shirt'
+        return 'FS T-Shirt' if has_any(fs_keywords, name_str) else 'T-Shirt'
         
     if has_any(['shirt'], name_str):
         return 'FS Shirt' if has_any(fs_keywords, name_str) else 'HS Shirt'
@@ -126,7 +126,8 @@ def find_columns(df):
         'cost': ['item cost', 'price', 'unit price', 'cost', 'rate', 'mrp', 'selling price'],
         'qty': ['quantity', 'qty', 'units', 'sold', 'count', 'total quantity'],
         'date': ['date', 'order date', 'month', 'time', 'created at'],
-        'order_id': ['order id', 'order #', 'invoice number', 'invoice #', 'order number', 'transaction id', 'id']
+        'order_id': ['order id', 'order #', 'invoice number', 'invoice #', 'order number', 'transaction id', 'id'],
+        'phone': ['phone', 'contact', 'mobile', 'cell', 'phone number', 'customer phone']
     }
     
     found = {}
@@ -208,8 +209,14 @@ def process_data(df, selected_cols):
         
         # Basket Size Calculation
         basket_metrics = {"avg_basket_qty": 0, "avg_basket_value": 0}
+        group_cols = []
         if 'order_id' in selected_cols and selected_cols['order_id'] in df.columns:
-            order_groups = df.groupby(selected_cols['order_id']).agg({
+            group_cols.append(selected_cols['order_id'])
+        if 'phone' in selected_cols and selected_cols['phone'] in df.columns:
+            group_cols.append(selected_cols['phone'])
+            
+        if group_cols:
+            order_groups = df.groupby(group_cols).agg({
                 'Internal_Qty': 'sum',
                 'Total Amount': 'sum'
             })
@@ -256,7 +263,7 @@ def main():
             st.subheader("🛠️ Column Mapping")
             st.info("We've detected your columns. Please verify or correct them before generating the report.")
             
-            c_sel1, c_sel2, c_sel3, c_sel4, c_sel5 = st.columns(5)
+            c_sel1, c_sel2, c_sel3, c_sel4, c_sel5, c_sel6 = st.columns(6)
             
             def get_col_idx(key):
                 if key in auto_cols and auto_cols[key] in all_cols:
@@ -268,13 +275,15 @@ def main():
             mapped_qty = c_sel3.selectbox("Quantity", all_cols, index=get_col_idx('qty'))
             mapped_date = c_sel4.selectbox("Date (Optional)", ["None"] + all_cols, index=get_col_idx('date') + 1 if 'date' in auto_cols else 0)
             mapped_order = c_sel5.selectbox("Order ID (Optional)", ["None"] + all_cols, index=get_col_idx('order_id') + 1 if 'order_id' in auto_cols else 0)
+            mapped_phone = c_sel6.selectbox("Phone (Optional)", ["None"] + all_cols, index=get_col_idx('phone') + 1 if 'phone' in auto_cols else 0)
             
             final_mapping = {
                 'name': mapped_name, 
                 'cost': mapped_cost, 
                 'qty': mapped_qty,
                 'date': mapped_date if mapped_date != "None" else None,
-                'order_id': mapped_order if mapped_order != "None" else None
+                'order_id': mapped_order if mapped_order != "None" else None,
+                'phone': mapped_phone if mapped_phone != "None" else None
             }
             
             with st.expander("🔍 Search Raw Data"):
