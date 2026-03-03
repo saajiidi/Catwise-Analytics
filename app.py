@@ -158,6 +158,10 @@ def process_data(df, selected_cols):
         df = df.copy()
         # Ensure 'Category' is calculated before grouping
         df['Internal_Name'] = df[selected_cols['name']].fillna('Unknown Product').astype(str)
+        
+        # Remove items with 'Choose Any' in the name
+        df = df[~df['Internal_Name'].str.contains('Choose Any', case=False, na=False)]
+        
         df['Internal_Cost'] = pd.to_numeric(df[selected_cols['cost']], errors='coerce').fillna(0)
         df['Internal_Qty'] = pd.to_numeric(df[selected_cols['qty']], errors='coerce').fillna(0)
         
