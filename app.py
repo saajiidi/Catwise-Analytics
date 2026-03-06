@@ -94,6 +94,7 @@ def get_category(name):
         'Water Bottle': ['water bottle'],
         'Contrast': ['contrast'],
         'Turtleneck': ['turtleneck', 'mock neck'],
+        'Drop Shoulder': ['drop', 'shoulder'],
         'Wallet': ['wallet'],
         'Kaftan': ['kaftan'],
         'Active Wear': ['active wear'],
@@ -104,6 +105,7 @@ def get_category(name):
         'Sweater': ['sweater', 'cardigan', 'knitwear'],
         'Passport Holder': ['passport holder'],
         'Cap': ['cap'],
+        
     }
     
     for cat, keywords in specific_cats.items():
