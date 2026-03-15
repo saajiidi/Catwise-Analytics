@@ -82,6 +82,7 @@ def get_category(name):
     
     specific_cats = {
         'Boxer': ['boxer'],
+        'TankTop': ['tank top'],
         'Jeans': ['jeans'],
         'Denim': ['denim'],
         'Flannel': ['flannel'],
@@ -105,6 +106,7 @@ def get_category(name):
         'Sweater': ['sweater', 'cardigan', 'knitwear'],
         'Passport Holder': ['passport holder'],
         'Cap': ['cap'],
+        
         
     }
     
