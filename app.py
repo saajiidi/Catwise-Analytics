@@ -82,7 +82,7 @@ def get_category(name):
     
     specific_cats = {
         'Boxer': ['boxer'],
-        'TankTop': ['tank top'],
+        'TankTop': ['tank top', 'tanktop', 'tank'],
         'Jeans': ['jeans'],
         'Denim': ['denim'],
         'Flannel': ['flannel'],
@@ -91,7 +91,6 @@ def get_category(name):
         'Trousers': ['trousers', 'pant', 'cargo', 'trouser', 'joggers', 'track pant', 'jogger'],
         'Twill Chino': ['twill chino'],
         'Mask': ['mask'],
-        'Bag': ['bag', 'backpack'],
         'Water Bottle': ['water bottle'],
         'Contrast': ['contrast'],
         'Turtleneck': ['turtleneck', 'mock neck'],
@@ -106,6 +105,7 @@ def get_category(name):
         'Sweater': ['sweater', 'cardigan', 'knitwear'],
         'Passport Holder': ['passport holder'],
         'Cap': ['cap'],
+        'Bag': ['bag', 'backpack'],
         
         
     }
