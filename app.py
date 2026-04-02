@@ -105,7 +105,7 @@ def get_category(name):
         'Sweater': ['sweater', 'cardigan', 'knitwear'],
         'Passport Holder': ['passport holder'],
         'Cap': ['cap'],
-        'Bag': ['bag', 'backpack'],
+        'Leather Bag': ['bag', 'backpack'],
         
         
     }
