@@ -348,8 +348,16 @@ def main():
                 
                 # Visuals
                 v1, v2 = st.columns(2)
-                v1.plotly_chart(px.pie(results['summary'], values='Total Amount', names='Category', hole=0.5, title='Revenue by Category', color_discrete_sequence=px.colors.qualitative.Pastel), use_container_width=True)
-                v2.plotly_chart(px.bar(results['summary'].sort_values('Total Qty', ascending=False), x='Category', y='Total Qty', color='Category', title='Volume by Category'), use_container_width=True)
+                
+                # Sort once for consistent color sequence
+                summ_sorted = results['summary'].sort_values('Total Amount', ascending=False)
+                color_seq = px.colors.qualitative.Pastel
+                
+                v1.plotly_chart(px.pie(summ_sorted, values='Total Amount', names='Category', hole=0.5, 
+                                       title='Revenue by Category', color_discrete_sequence=color_seq), use_container_width=True)
+                
+                v2.plotly_chart(px.bar(summ_sorted, x='Category', y='Total Qty', color='Category', 
+                                       title='Volume by Category', color_discrete_sequence=color_seq), use_container_width=True)
                 
                 # Data Tables
                 t1, t2, t3 = st.tabs(["📑 Breakdown", "🏆 Top Items", "🔍 Full List"])
