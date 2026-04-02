@@ -24,6 +24,25 @@ st.markdown("""
     .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #007bff; color: white; font-weight: bold; }
     div[data-testid="stExpander"] { border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .footer {
+        text-align: center;
+        padding: 40px 0 20px 0;
+        color: #6c757d;
+        font-size: 0.9rem;
+        border-top: 1px solid #e9ecef;
+        margin-top: 40px;
+    }
+    .footer-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .footer-logo {
+        height: 24px;
+        vertical-align: middle;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -339,6 +358,26 @@ def main():
         except Exception as e:
             log_system_event("FILE_ERROR", str(e))
             st.error(f"File error: {e}")
+
+    # Add Footer
+    st.markdown("---")
+    _, f_col, _ = st.columns([1, 4, 1])
+    with f_col:
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; color: #6c757d; font-size: 0.9rem;">
+                <span>© 2026 Sajid Islam. All rights reserved. | Powered by</span>
+                <span style="font-weight: 700; color: #1a1a1b; display: flex; align-items: center; gap: 5px;">
+                    DEEN Commerce
+                </span>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
+        # Adding a small logo just below or inline if I can
+        sub_col1, sub_col2, sub_col3 = st.columns([3, 1, 3])
+        with sub_col2:
+            st.image("assets/deen_logo.png", use_container_width=True)
 
 if __name__ == "__main__":
     main()
