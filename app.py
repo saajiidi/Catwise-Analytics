@@ -166,8 +166,8 @@ def apply_custom_styles():
             left: 0;
             bottom: 0;
             width: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
-            color: #495057;
+            background-color: #ffffff; /* Pure white in light mode */
+            color: #000000 !important; /* Pure black in light mode */
             text-align: center;
             padding: 18px 0;
             border-top: 1px solid #e9ecef;
@@ -177,13 +177,13 @@ def apply_custom_styles():
             box-shadow: 0 -4px 30px rgba(0,0,0,0.06);
         }
         [data-theme="dark"] .sticky-footer {
-            background-color: rgba(18, 18, 18, 0.9) !important;
+            background-color: #121212 !important; /* Pure dark in dark mode */
             color: #ffffff !important;
             border-top: 1px solid #333 !important;
         }
         @media (prefers-color-scheme: dark) {
             .sticky-footer {
-                background-color: rgba(18, 18, 18, 0.9) !important;
+                background-color: #121212 !important;
                 color: #ffffff !important;
             }
         }
@@ -205,7 +205,7 @@ def apply_custom_styles():
         }
         .brand-name {
             font-weight: 600;
-            color: #1a1a1b;
+            color: #000000; /* Pure black in light mode */
         }
         [data-theme="dark"] .brand-name {
             color: #ffffff !important;
