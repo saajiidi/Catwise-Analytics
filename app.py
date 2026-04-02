@@ -220,6 +220,77 @@ def apply_custom_styles():
             padding-top: 3rem !important;
         }
 
+        /* --- Comprehensive Component Design --- */
+        
+        /* Headers & Typography */
+        h1, h2, h3, h4, h5, h6, .stSubheader {
+            color: var(--text-color, #1a1a1b) !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.5px !important;
+        }
+        [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3 {
+            color: #ffffff !important;
+        }
+
+        /* Inputs, Selectboxes, TextAreas */
+        div[data-testid="stSelectbox"] > div, 
+        div[data-testid="stTextInput"] > div,
+        div[data-testid="stTextArea"] > div {
+            background-color: var(--background-secondary, #ffffff) !important;
+            border-radius: 12px !important;
+            border: 1px solid var(--secondary-background-color, #eee) !important;
+            transition: all 0.2s ease !important;
+        }
+        div[data-testid="stSelectbox"]:hover, 
+        div[data-testid="stTextInput"]:hover {
+            border-color: #007bff !important;
+        }
+        
+        /* Tabs Styling */
+        div[data-testid="stTabs"] {
+            background-color: transparent !important;
+        }
+        div[data-testid="stTabs"] button {
+            font-weight: 600 !important;
+            color: var(--text-color, #495057) !important;
+            font-size: 1rem !important;
+            border-bottom: 3px solid transparent !important;
+            transition: all 0.3s ease !important;
+        }
+        div[data-testid="stTabs"] button[aria-selected="true"] {
+            color: #007bff !important;
+            border-bottom: 3px solid #007bff !important;
+        }
+
+        /* DataFrames & Tables */
+        div[data-testid="stDataFrame"] {
+            border-radius: 12px !important;
+            overflow: hidden !important;
+            border: 1px solid var(--secondary-background-color, #f0f2f6) !important;
+        }
+
+        /* Notifications (Success, Info, etc.) */
+        div[data-testid="stNotification"] {
+            background-color: var(--background-secondary, #ffffff) !important;
+            border-radius: 14px !important;
+            border: 1px solid var(--secondary-background-color, #f0f2f6) !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+        }
+        [data-theme="dark"] div[data-testid="stNotification"] {
+            background-color: #1e1e1e !important;
+            border: 1px solid #333 !important;
+        }
+
+        /* Sidebar Design */
+        [data-testid="stSidebar"] {
+            background-color: var(--background-secondary, #ffffff) !important;
+            border-right: 1px solid var(--secondary-background-color, #f0f2f6) !important;
+        }
+        [data-theme="dark"] [data-testid="stSidebar"] {
+            background-color: #0e1117 !important;
+            border-right: 1px solid #1e1e1e !important;
+        }
+
         /* --- Responsive Design --- */
         
         /* Small Laptops & Tablets (1024px and down) */
@@ -268,6 +339,12 @@ def apply_custom_styles():
             .stButton>button {
                 height: 3em;
                 font-size: 0.9rem;
+            }
+            
+            /* Tabs scroll on mobile */
+            div[data-testid="stTabs"] button {
+                font-size: 0.9rem !important;
+                padding: 10px 15px !important;
             }
         }
 
