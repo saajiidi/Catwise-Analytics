@@ -216,148 +216,133 @@ def apply_custom_styles():
             }
         }
         .block-container {
-            padding-bottom: 120px !important;
+            padding-bottom: 150px !important;
             padding-top: 3rem !important;
         }
 
-        /* --- Comprehensive Component Design --- */
+        /* --- Theme-Aware Dynamic Styling --- */
         
-        /* Headers & Typography */
-        h1, h2, h3, h4, h5, h6, .stSubheader {
-            color: var(--text-color, #1a1a1b) !important;
-            font-weight: 800 !important;
-            letter-spacing: -0.5px !important;
-        }
-        [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3 {
-            color: #ffffff !important;
+        /* Universal Typography */
+        h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {
+            color: var(--text-color) !important;
         }
 
-        /* Inputs, Selectboxes, TextAreas */
+        /* Metric Styling - Fully Dynamic */
+        div[data-testid="stMetric"] { 
+            background-color: var(--secondary-background-color); 
+            padding: 24px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(128, 128, 128, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        div[data-testid="stMetric"]:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
+
+        [data-testid="stMetricLabel"] {
+            font-weight: 600 !important;
+            opacity: 0.8;
+            color: var(--text-color) !important;
+        }
+
+        [data-testid="stMetricValue"], 
+        [data-testid="stMetricValue"] > div {
+            font-weight: 800 !important;
+            font-size: 1.6rem !important;
+            color: var(--text-color) !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+        }
+
+        /* UI Components - Inputs & Selectboxes */
         div[data-testid="stSelectbox"] > div, 
         div[data-testid="stTextInput"] > div,
         div[data-testid="stTextArea"] > div {
-            background-color: var(--background-secondary, #ffffff) !important;
+            background-color: var(--secondary-background-color) !important;
+            color: var(--text-color) !important;
             border-radius: 12px !important;
-            border: 1px solid var(--secondary-background-color, #eee) !important;
-            transition: all 0.2s ease !important;
+            border: 1px solid rgba(128, 128, 128, 0.2) !important;
         }
-        div[data-testid="stSelectbox"]:hover, 
-        div[data-testid="stTextInput"]:hover {
-            border-color: #007bff !important;
+
+        /* Buttons - High Contrast Primary */
+        .stButton>button { 
+            width: 100%; 
+            border-radius: 12px; 
+            height: 3.5em; 
+            background-color: var(--primary-color) !important;
+            color: white !important; /* Buttons usually have white text regardless of theme */
+            font-weight: 700;
+            border: none;
+            transition: all 0.2s ease;
         }
-        
-        /* Tabs Styling */
-        div[data-testid="stTabs"] {
-            background-color: transparent !important;
+        .stButton>button:hover {
+            opacity: 0.9;
+            transform: scale(1.01);
         }
+
+        /* Tabs & Dividers */
         div[data-testid="stTabs"] button {
-            font-weight: 600 !important;
-            color: var(--text-color, #495057) !important;
-            font-size: 1rem !important;
-            border-bottom: 3px solid transparent !important;
-            transition: all 0.3s ease !important;
+            color: var(--text-color) !important;
+            opacity: 0.7;
         }
         div[data-testid="stTabs"] button[aria-selected="true"] {
-            color: #007bff !important;
-            border-bottom: 3px solid #007bff !important;
+            color: var(--primary-color) !important;
+            opacity: 1;
+            border-bottom: 2px solid var(--primary-color) !important;
         }
+        hr { border-color: rgba(128, 128, 128, 0.2) !important; }
 
-        /* DataFrames & Tables */
-        div[data-testid="stDataFrame"] {
-            border-radius: 12px !important;
-            overflow: hidden !important;
-            border: 1px solid var(--secondary-background-color, #f0f2f6) !important;
-        }
-
-        /* Notifications (Success, Info, etc.) */
-        div[data-testid="stNotification"] {
-            background-color: var(--background-secondary, #ffffff) !important;
+        /* Expander & Notifications */
+        div[data-testid="stExpander"], div[data-testid="stNotification"] {
+            background-color: var(--secondary-background-color) !important;
+            border: 1px solid rgba(128, 128, 128, 0.1) !important;
             border-radius: 14px !important;
-            border: 1px solid var(--secondary-background-color, #f0f2f6) !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
-        }
-        [data-theme="dark"] div[data-testid="stNotification"] {
-            background-color: #1e1e1e !important;
-            border: 1px solid #333 !important;
+            color: var(--text-color) !important;
         }
 
-        /* Sidebar Design */
-        [data-testid="stSidebar"] {
-            background-color: var(--background-secondary, #ffffff) !important;
-            border-right: 1px solid var(--secondary-background-color, #f0f2f6) !important;
+        /* Sticky Footer - Dynamic Contrast */
+        .sticky-footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            text-align: center;
+            padding: 18px 0;
+            border-top: 1px solid rgba(128, 128, 128, 0.2);
+            z-index: 999;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
         }
-        [data-theme="dark"] [data-testid="stSidebar"] {
-            background-color: #0e1117 !important;
-            border-right: 1px solid #1e1e1e !important;
+        .brand-name {
+            font-weight: 700;
+            color: var(--primary-color) !important;
         }
 
         /* --- Responsive Design --- */
-        
-        /* Small Laptops & Tablets (1024px and down) */
-        @media (max-width: 1024px) {
-            [data-testid="stMetricValue"] {
-                font-size: 1.4rem !important;
-            }
-            [data-testid="stMetric"] {
-                padding: 18px !important;
-            }
-        }
-
-        /* Mobile Devices (768px and down) */
         @media (max-width: 768px) {
-            /* Adjust padding for mobile */
             .block-container {
                 padding-left: 1rem !important;
                 padding-right: 1rem !important;
-                padding-top: 2rem !important;
-                padding-bottom: 180px !important; /* More space for stacked footer */
-            }
-
-            /* Metrics stacking and sizing */
-            [data-testid="stMetricValue"] {
-                font-size: 1.25rem !important;
-            }
-            [data-testid="stMetricLabel"] {
-                font-size: 0.9rem !important;
-            }
-            div[data-testid="stMetric"] {
-                padding: 16px !important;
-                margin-bottom: 0.8rem !important;
-            }
-
-            /* Footer adjustments */
-            .sticky-footer {
-                padding: 12px 10px;
+                padding-bottom: 200px !important;
             }
             .footer-content-inner {
                 flex-direction: column;
                 gap: 8px;
             }
-            .brand-name { font-size: 0.85rem; }
-            
-            /* Button adjustments */
-            .stButton>button {
-                height: 3em;
-                font-size: 0.9rem;
+            [data-testid="stMetricValue"] {
+                font-size: 1.3rem !important;
             }
-            
-            /* Tabs scroll on mobile */
-            div[data-testid="stTabs"] button {
-                font-size: 0.9rem !important;
-                padding: 10px 15px !important;
-            }
-        }
-
-        /* Very Small Screens (480px and down) */
-        @media (max-width: 480px) {
             .sticky-footer {
-                position: relative !important; /* Unstick on tiny screens to save space */
-                box-shadow: none;
-                border-top: 1px solid #eee;
-                background: transparent;
-            }
-            .block-container {
-                padding-bottom: 2rem !important;
+                position: relative !important;
+                background-color: transparent;
+                border-top: 1px solid rgba(128, 128, 128, 0.1);
             }
         }
         """, unsafe_allow_html=True)
