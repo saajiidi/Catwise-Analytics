@@ -3,147 +3,157 @@ import pandas as pd
 import plotly.express as px
 import os
 import json
+import base64
 from datetime import datetime
 from io import BytesIO
 
-# Configuration
+# --- Configuration & Styling ---
 FEEDBACK_DIR = "feedback"
 os.makedirs(FEEDBACK_DIR, exist_ok=True)
 
-# Set page configuration
-st.set_page_config(
-    page_title="Product Sales Reporter",
-    page_icon="📊",
-    layout="wide"
-)
+# Modern Category Mapping
+CATEGORY_MAPPING = {
+    'Boxer': ['boxer'],
+    'Tank Top': ['tank top', 'tanktop', 'tank', 'top'],
+    'Jeans': ['jeans'],
+    'Denim Shirt': ['denim'],
+    'Flannel Shirt': ['flannel'],
+    'Polo Shirt': ['polo'],
+    'Panjabi': ['panjabi', 'punjabi'],
+    'Trousers': ['trousers', 'pant', 'cargo', 'trouser', 'joggers', 'track pant', 'jogger'],
+    'Twill Chino': ['twill chino'],
+    'Mask': ['mask'],
+    'Water Bottle': ['water bottle'],
+    'Contrast Shirt': ['contrast'],
+    'Turtleneck': ['turtleneck', 'mock neck'],
+    'Drop Shoulder': ['drop', 'shoulder'],
+    'Wallet': ['wallet'],
+    'Kaftan Shirt': ['kaftan'],
+    'Active Wear': ['active wear'],
+    'Jersy': ['jersy'],
+    'Sweatshirt': ['sweatshirt', 'hoodie', 'pullover'],
+    'Jacket': ['jacket', 'outerwear', 'coat'],
+    'Belt': ['belt'],
+    'Sweater': ['sweater', 'cardigan', 'knitwear'],
+    'Passport Holder': ['passport holder'],
+    'Cap': ['cap'],
+    'Leather Bag': ['bag', 'backpack'],
+}
 
-# Custom CSS for premium look
-st.markdown("""
-    <style>
-    .main { background-color: #f8f9fa; }
-    .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #007bff; color: white; font-weight: bold; }
-    div[data-testid="stExpander"] { border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .footer {
-        text-align: center;
-        padding: 40px 0 20px 0;
-        color: #6c757d;
-        font-size: 0.9rem;
-        border-top: 1px solid #e9ecef;
-        margin-top: 40px;
-    }
-    .footer-content {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-    .footer-logo {
-        height: 24px;
-        vertical-align: middle;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+LOGO_PNG = "assets/deen_logo.png"
 
-def log_system_event(event_type, details):
-    """Logs errors or system events to a JSON file for further analysis."""
+def load_logo():
+    """Loads logo as base64 string from assets/deen_logo.png."""
+    if os.path.exists(LOGO_PNG):
+        try:
+            with open(LOGO_PNG, "rb") as f:
+                return base64.b64encode(f.read()).decode()
+        except: pass
+    return ""
+
+def apply_custom_styles():
+    """Applies premium CSS styles to the dashboard."""
+    st.markdown("""
+        <style>
+        .main { background-color: #f8f9fa; }
+        .stMetric { 
+            background-color: #ffffff; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+        .stButton>button { 
+            width: 100%; 
+            border-radius: 8px; 
+            height: 3.2em; 
+            background-color: #007bff; 
+            color: white; 
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .stButton>button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        div[data-testid="stExpander"] { 
+            border: none; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .sticky-footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #6c757d;
+            text-align: center;
+            padding: 15px 0;
+            border-top: 1px solid #e9ecef;
+            z-index: 999;
+            font-size: 0.85rem;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+        }
+        .footer-content-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .small-logo {
+            height: 22px;
+            width: auto;
+            filter: grayscale(20%);
+        }
+        /* Dashboard Container Spacing */
+        .block-container {
+            padding-bottom: 100px !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+# --- Helper Functions ---
+
+def log_event(event_type, details):
+    """Logs system events to JSON."""
     log_file = os.path.join(FEEDBACK_DIR, "system_logs.json")
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    log_entry = {
-        "timestamp": timestamp,
+    entry = {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "type": event_type,
         "details": details
     }
-    
     try:
         logs = []
         if os.path.exists(log_file):
-            with open(log_file, "r") as f:
-                logs = json.load(f)
-        
-        logs.append(log_entry)
-        with open(log_file, "w") as f:
-            json.dump(logs, f, indent=4)
-    except Exception as e:
-        print(f"Logging failed: {e}")
+            with open(log_file, "r") as f: logs = json.load(f)
+        logs.append(entry)
+        with open(log_file, "w") as f: json.dump(logs[-100:], f, indent=4)
+    except: pass
 
-def save_user_feedback(comment):
-    """Saves user comments to a feedback file."""
-    feedback_file = os.path.join(FEEDBACK_DIR, "user_feedback.json")
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    feedback_entry = {
-        "timestamp": timestamp,
-        "comment": comment
-    }
-    
-    try:
-        data = []
-        if os.path.exists(feedback_file):
-            with open(feedback_file, "r") as f:
-                data = json.load(f)
-        
-        data.append(feedback_entry)
-        with open(feedback_file, "w") as f:
-            json.dump(data, f, indent=4)
-        return True
-    except Exception:
-        return False
-
-def get_category(name):
-    """Categorizes products based on keywords in their names."""
+def get_product_category(name):
+    """Categorizes product based on keywords."""
     name_str = str(name).lower()
-    
-    def has_any(keywords, text):
-        return any(kw.lower() in text for kw in keywords)
-    
-    specific_cats = {
-        'Boxer': ['boxer'],
-        'Tank Top': ['tank top', 'tanktop', 'tank', 'top'],
-        'Jeans': ['jeans'],
-        'Denim Shirt': ['denim'],
-        'Flannel Shirt': ['flannel'],
-        'Polo Shirt': ['polo'],
-        'Panjabi': ['panjabi', 'punjabi'],
-        'Trousers': ['trousers', 'pant', 'cargo', 'trouser', 'joggers', 'track pant', 'jogger'],
-        'Twill Chino': ['twill chino'],
-        'Mask': ['mask'],
-        'Water Bottle': ['water bottle'],
-        'Contrast Shirt': ['contrast'],
-        'Turtleneck': ['turtleneck', 'mock neck'],
-        'Drop Shoulder': ['drop', 'shoulder'],
-        'Wallet': ['wallet'],
-        'Kaftan Shirt': ['kaftan'],
-        'Active Wear': ['active wear'],
-        'Jersy': ['jersy'],
-        'Sweatshirt': ['sweatshirt', 'hoodie', 'pullover'],
-        'Jacket': ['jacket', 'outerwear', 'coat'],
-        'Belt': ['belt'],
-        'Sweater': ['sweater', 'cardigan', 'knitwear'],
-        'Passport Holder': ['passport holder'],
-        'Cap': ['cap'],
-        'Leather Bag': ['bag', 'backpack'],
-        
-        
-    }
-    
-    for cat, keywords in specific_cats.items():
-        if has_any(keywords, name_str):
+    for cat, keywords in CATEGORY_MAPPING.items():
+        if any(kw.lower() in name_str for kw in keywords):
             return cat
-
+    
+    # Special handling for T-Shirts and Shirts
     fs_keywords = ['full sleeve', 'long sleeve', 'fs', 'l/s']
-    if has_any(['t-shirt', 't shirt', 'tee'], name_str):
-        return 'FS T-Shirt' if has_any(fs_keywords, name_str) else 'T-Shirt'
-        
-    if has_any(['shirt'], name_str):
-        return 'FS Shirt' if has_any(fs_keywords, name_str) else 'HS Shirt'
+    is_fs = any(kw in name_str for kw in fs_keywords)
+    
+    if any(kw in name_str for kw in ['t-shirt', 't shirt', 'tee']):
+        return 'FS T-Shirt' if is_fs else 'T-Shirt'
+    if 'shirt' in name_str:
+        return 'FS Shirt' if is_fs else 'HS Shirt'
         
     return 'Others'
 
 def find_columns(df):
-    """Detects primary columns using exact and then partial matching."""
+    """Auto-detects columns from dataframe."""
     mapping = {
         'name': ['item name', 'product name', 'product', 'item', 'title', 'description', 'name'],
         'cost': ['item cost', 'price', 'unit price', 'cost', 'rate', 'mrp', 'selling price'],
@@ -152,257 +162,208 @@ def find_columns(df):
         'order_id': ['order id', 'order #', 'invoice number', 'invoice #', 'order number', 'transaction id', 'id'],
         'phone': ['phone', 'contact', 'mobile', 'cell', 'phone number', 'customer phone']
     }
-    
     found = {}
-    actual_cols = [c.strip() for c in df.columns]
-    lower_cols = [c.lower() for c in actual_cols]
+    actual_cols = list(df.columns)
+    lower_cols = [c.strip().lower() for c in actual_cols]
     
-    # 1. First Pass: Exact Matches (Case Insensitive)
     for key, aliases in mapping.items():
+        # Exact match
         for alias in aliases:
             if alias in lower_cols:
-                idx = lower_cols.index(alias)
-                found[key] = actual_cols[idx]
+                found[key] = actual_cols[lower_cols.index(alias)]
                 break
-    
-    # 2. Second Pass: Partial Matches for missing keys
-    for key, aliases in mapping.items():
+        # Partial match
         if key not in found:
-            for col, l_col in zip(actual_cols, lower_cols):
-                if any(alias in l_col for alias in aliases):
-                    found[key] = col
+            for i, col in enumerate(lower_cols):
+                if any(alias in col for alias in aliases):
+                    found[key] = actual_cols[i]
                     break
-                    
     return found
 
-def process_data(df, selected_cols):
-    """Processed data using validated user-selected or auto-detected columns."""
-    try:
-        df = df.copy()
-        # Ensure 'Category' is calculated before grouping
-        df['Internal_Name'] = df[selected_cols['name']].fillna('Unknown Product').astype(str)
-        
-        # Remove items with 'Choose Any' in the name
-        df = df[~df['Internal_Name'].str.contains('Choose Any', case=False, na=False)]
-        
-        df['Internal_Cost'] = pd.to_numeric(df[selected_cols['cost']], errors='coerce').fillna(0)
-        df['Internal_Qty'] = pd.to_numeric(df[selected_cols['qty']], errors='coerce').fillna(0)
-        
-        # Date processing for filename
-        timeframe_suffix = ""
-        if 'date' in selected_cols and selected_cols['date'] in df.columns:
-            try:
-                # Try to convert to datetime
-                dates = pd.to_datetime(df[selected_cols['date']], errors='coerce').dropna()
-                if not dates.empty:
-                    # If all dates are in the same month, use Month Name, otherwise use Range
-                    if dates.dt.to_period('M').nunique() == 1:
-                        timeframe_suffix = dates.iloc[0].strftime("%B_%Y")
-                    else:
-                        timeframe_suffix = f"{dates.min().strftime('%d%b')}_to_{dates.max().strftime('%d%b_%y')}"
-            except Exception:
-                # If date parsing fails, just use the first non-null value as a fallback
-                val = str(df[selected_cols['date']].dropna().iloc[0]) if not df[selected_cols['date']].dropna().empty else ""
-                timeframe_suffix = val.replace("/", "-").replace(" ", "_")[:20]
-
-        # Treatment for anomalies
-        if (df['Internal_Qty'] < 0).any():
-            log_system_event("DATA_ISSUE", "Found negative quantities, converted to 0.")
-            df.loc[df['Internal_Qty'] < 0, 'Internal_Qty'] = 0
-
-        df['Category'] = df['Internal_Name'].apply(get_category)
-        df['Total Amount'] = df['Internal_Cost'] * df['Internal_Qty']
-        
-        # Track 'Others' for refinement
-        others = df[df['Category'] == 'Others']
-        if len(others) > 0:
-            log_system_event("OTHERS_LOG", {"count": len(others), "samples": others['Internal_Name'].head(10).tolist()})
-
-        # Analytics grouping
-        summary = df.groupby('Category').agg({'Internal_Qty': 'sum', 'Total Amount': 'sum'}).reset_index()
-        summary.columns = ['Category', 'Total Qty', 'Total Amount']
-        
-        total_rev = summary['Total Amount'].sum()
-        total_qty = summary['Total Qty'].sum()
-        if total_rev > 0: summary['Revenue Share (%)'] = (summary['Total Amount'] / total_rev * 100).round(2)
-        if total_qty > 0: summary['Quantity Share (%)'] = (summary['Total Qty'] / total_qty * 100).round(2)
-        
-        drilldown = df.groupby(['Category', 'Internal_Cost']).agg({'Internal_Qty': 'sum', 'Total Amount': 'sum'}).reset_index()
-        drilldown.columns = ['Category', 'Price (TK)', 'Total Qty', 'Total Amount']
-        
-        top_items = df.groupby('Internal_Name').agg({'Internal_Qty': 'sum', 'Total Amount': 'sum', 'Category': 'first'}).reset_index()
-        top_items.columns = ['Product Name', 'Total Qty', 'Total Amount', 'Category']
-        top_items = top_items.sort_values('Total Amount', ascending=False)
-        
-        # Basket Size Calculation
-        basket_metrics = {"avg_basket_qty": 0, "avg_basket_value": 0}
-        group_cols = []
-        if 'order_id' in selected_cols and selected_cols['order_id'] in df.columns:
-            group_cols.append(selected_cols['order_id'])
-        if 'phone' in selected_cols and selected_cols['phone'] in df.columns:
-            group_cols.append(selected_cols['phone'])
-            
-        if group_cols:
-            order_groups = df.groupby(group_cols).agg({
-                'Internal_Qty': 'sum',
-                'Total Amount': 'sum'
-            })
-            basket_metrics["avg_basket_qty"] = order_groups['Internal_Qty'].mean()
-            basket_metrics["avg_basket_value"] = order_groups['Total Amount'].mean()
-        
-        return drilldown, summary, top_items, timeframe_suffix, basket_metrics
-    except Exception as e:
-        log_system_event("CRASH", str(e))
-        st.error(f"Error in calculation: {e}")
-        return None, None, None, "", {}
-
-def main():
-    st.title("🚀 Sales Performance Dashboard")
+def process_analytics(df, mapping):
+    """Core data processing and metric calculation."""
+    df = df.copy()
     
-    # Sidebar Feedback
+    # 1. Clean Data
+    df['Clean_Name'] = df[mapping['name']].fillna('Unknown').astype(str)
+    df = df[~df['Clean_Name'].str.contains('Choose Any', case=False, na=False)]
+    df['Clean_Cost'] = pd.to_numeric(df[mapping['cost']], errors='coerce').fillna(0)
+    df['Clean_Qty'] = pd.to_numeric(df[mapping['qty']], errors='coerce').fillna(0)
+    df.loc[df['Clean_Qty'] < 0, 'Clean_Qty'] = 0
+    df['Total Amount'] = df['Clean_Cost'] * df['Clean_Qty']
+    df['Category'] = df['Clean_Name'].apply(get_product_category)
+    
+    # 2. Timeframe Detection
+    timeframe = ""
+    if mapping.get('date') and mapping['date'] in df.columns:
+        try:
+            dates = pd.to_datetime(df[mapping['date']], errors='coerce').dropna()
+            if not dates.empty:
+                if dates.dt.to_period('M').nunique() == 1:
+                    timeframe = dates.iloc[0].strftime("%B_%Y")
+                else:
+                    timeframe = f"{dates.min().strftime('%d%b')}_to_{dates.max().strftime('%d%b_%y')}"
+        except: timeframe = "Report"
+
+    # 3. Aggregations
+    summary = df.groupby('Category').agg({'Clean_Qty': 'sum', 'Total Amount': 'sum'}).reset_index()
+    summary.columns = ['Category', 'Total Qty', 'Total Amount']
+    
+    t_rev = summary['Total Amount'].sum()
+    t_qty = summary['Total Qty'].sum()
+    if t_rev > 0: summary['Revenue Share (%)'] = (summary['Total Amount'] / t_rev * 100).round(2)
+    if t_qty > 0: summary['Quantity Share (%)'] = (summary['Total Qty'] / t_qty * 100).round(2)
+    
+    drilldown = df.groupby(['Category', 'Clean_Cost']).agg({'Clean_Qty': 'sum', 'Total Amount': 'sum'}).reset_index()
+    drilldown.columns = ['Category', 'Price (TK)', 'Total Qty', 'Total Amount']
+    
+    top_items = df.groupby('Clean_Name').agg({'Clean_Qty': 'sum', 'Total Amount': 'sum', 'Category': 'first'}).reset_index()
+    top_items.columns = ['Product Name', 'Total Qty', 'Total Amount', 'Category']
+    top_items = top_items.sort_values('Total Amount', ascending=False)
+    
+    # 4. Basket Metrics
+    avg_basket_value = 0
+    group_cols = [c for c in [mapping.get('order_id'), mapping.get('phone')] if c and c in df.columns]
+    
+    if group_cols:
+        order_groups = df.groupby(group_cols).agg({'Total Amount': 'sum'})
+        avg_basket_value = order_groups['Total Amount'].mean()
+        
+    return {
+        'drilldown': drilldown,
+        'summary': summary,
+        'top_items': top_items,
+        'timeframe': timeframe,
+        'avg_basket_value': avg_basket_value,
+        'total_qty': t_qty,
+        'total_rev': t_rev,
+        'total_orders': len(order_groups) if group_cols else 0
+    }
+
+# --- UI Components ---
+
+def render_sidebar():
     with st.sidebar:
-        st.header("💬 Feedback & Logs")
-        comment = st.text_area("Found an error? Report it here:", placeholder="e.g. 'Polo' items are misclassified...")
+        st.header("💬 Feedback & Debug")
+        comment = st.text_area("Report Issues:", placeholder="Category 'Polo' is incorrect...")
         if st.button("Submit Report"):
-            if save_user_feedback(comment):
-                st.success("Thank you! Feedback saved.")
-            else:
-                st.error("Submission failed.")
+            feedback_file = os.path.join(FEEDBACK_DIR, "user_feedback.json")
+            entry = {"timestamp": datetime.now().isoformat(), "comment": comment}
+            try:
+                data = []
+                if os.path.exists(feedback_file):
+                    with open(feedback_file, "r") as f: data = json.load(f)
+                data.append(entry)
+                with open(feedback_file, "w") as f: json.dump(data, f, indent=4)
+                st.success("Feedback saved!")
+            except: st.error("Failed to save.")
         
         st.divider()
-        if st.checkbox("View Debug Logs"):
+        if st.checkbox("View System Logs"):
             log_path = os.path.join(FEEDBACK_DIR, "system_logs.json")
             if os.path.exists(log_path):
                 with open(log_path, "r") as f: st.json(json.load(f)[-10:])
-            else: st.write("No logs yet.")
+            else: st.info("No logs available.")
 
-    uploaded_file = st.file_uploader("Upload Sales Data (Excel or CSV)", type=['xlsx', 'csv'])
-
-    if uploaded_file is not None:
-        try:
-            df = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
-            st.success(f"File uploaded: {uploaded_file.name}")
-            
-            # Smart Column Mapping Selection
-            auto_cols = find_columns(df)
-            all_cols = list(df.columns)
-            
-            st.subheader("🛠️ Column Mapping")
-            st.info("We've detected your columns. Please verify or correct them before generating the report.")
-            
-            c_sel1, c_sel2, c_sel3, c_sel4, c_sel5, c_sel6 = st.columns(6)
-            
-            def get_col_idx(key):
-                if key in auto_cols and auto_cols[key] in all_cols:
-                    return all_cols.index(auto_cols[key])
-                return 0
-
-            mapped_name = c_sel1.selectbox("Product Name", all_cols, index=get_col_idx('name'))
-            mapped_cost = c_sel2.selectbox("Price/Cost", all_cols, index=get_col_idx('cost'))
-            mapped_qty = c_sel3.selectbox("Quantity", all_cols, index=get_col_idx('qty'))
-            mapped_date = c_sel4.selectbox("Date (Optional)", ["None"] + all_cols, index=get_col_idx('date') + 1 if 'date' in auto_cols else 0)
-            mapped_order = c_sel5.selectbox("Order ID (Optional)", ["None"] + all_cols, index=get_col_idx('order_id') + 1 if 'order_id' in auto_cols else 0)
-            mapped_phone = c_sel6.selectbox("Phone (Optional)", ["None"] + all_cols, index=get_col_idx('phone') + 1 if 'phone' in auto_cols else 0)
-            
-            final_mapping = {
-                'name': mapped_name, 
-                'cost': mapped_cost, 
-                'qty': mapped_qty,
-                'date': mapped_date if mapped_date != "None" else None,
-                'order_id': mapped_order if mapped_order != "None" else None,
-                'phone': mapped_phone if mapped_phone != "None" else None
-            }
-            
-            with st.expander("🔍 Search Raw Data"):
-                search = st.text_input("Product search...")
-                if search: st.dataframe(df[df[mapped_name].str.contains(search, case=False, na=False)], use_container_width=True)
-                else: st.dataframe(df.head(10), use_container_width=True)
-
-            if st.button("Generate Dashboard"):
-                drill, summ, top, timeframe, basket = process_data(df, final_mapping)
-                if drill is not None:
-                    t_qty, t_rev = summ['Total Qty'].sum(), summ['Total Amount'].sum()
-                    
-                    m1, m2, m3, m4, m5 = st.columns(5)
-                    m1.metric("Sold", f"{t_qty:,.0f}")
-                    m2.metric("Revenue", f"TK {t_rev:,.2f}")
-                    m3.metric("Avg Price", f"TK {(t_rev/t_qty if t_qty > 0 else 0):,.2f}")
-                    
-                    if basket["avg_basket_qty"] > 0:
-                        m4.metric("Avg Basket (Qty)", f"{basket['avg_basket_qty']:.2f}")
-                        m5.metric("Avg Basket (TK)", f"TK {basket['avg_basket_value']:,.2f}")
-                    
-                    st.divider()
-                    v1, v2 = st.columns(2)
-                    v1.plotly_chart(px.pie(summ, values='Total Amount', names='Category', hole=0.5, title='Revenue Share', color_discrete_sequence=px.colors.qualitative.Pastel), use_container_width=True)
-                    v2.plotly_chart(px.bar(summ.sort_values('Total Qty', ascending=False), x='Category', y='Total Qty', color='Category', title='Volume by Category', color_discrete_sequence=px.colors.qualitative.Bold), use_container_width=True)
-                    
-                    tabs = st.tabs(["📑 Summary", "🏆 Rankings", "🔍 Drilldown"])
-                    with tabs[0]: st.dataframe(summ.sort_values('Total Amount', ascending=False), use_container_width=True, hide_index=True)
-                    with tabs[1]: st.dataframe(top.head(20), use_container_width=True, hide_index=True)
-                    with tabs[2]: st.dataframe(drill.sort_values(['Category', 'Price (TK)']), use_container_width=True, hide_index=True)
-                    
-                    buf = BytesIO()
-                    with pd.ExcelWriter(buf, engine='xlsxwriter') as wr:
-                        summ.to_excel(wr, sheet_name='Summary', index=False)
-                        top.to_excel(wr, sheet_name='Rankings', index=False)
-                        drill.to_excel(wr, sheet_name='Details', index=False)
-                    
-                    # Generate dynamic filename
-                    base_name = uploaded_file.name.split('.')[0]
-                    file_suffix = f"_{timeframe}" if timeframe else ""
-                    final_filename = f"Report_{base_name}{file_suffix}.xlsx"
-                    
-                    st.download_button("📥 Export Report", data=buf.getvalue(), file_name=final_filename)
-                    
-        except Exception as e:
-            log_system_event("FILE_ERROR", str(e))
-            st.error(f"File error: {e}")
-
-    # Add Sticky Footer
-    logo_base64 = "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[truncated byte strings]...o"
+def render_footer(logo_b64):
     footer_html = f"""
-    <style>
-    .sticky-footer {{
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background-color: rgba(255, 255, 255, 0.95);
-        color: #6c757d;
-        text-align: center;
-        padding: 12px 0;
-        border-top: 1px solid #e9ecef;
-        z-index: 999;
-        font-size: 0.85rem;
-        backdrop-filter: blur(5px);
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
-    }}
-    .footer-content-inner {{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }}
-    .small-logo {{
-        height: 20px;
-        width: auto;
-        vertical-align: middle;
-    }}
-    /* Adjust main content padding to avoid overlap */
-    .main .block-container {{
-        padding-bottom: 80px !important;
-    }}
-    </style>
     <div class="sticky-footer">
         <div class="footer-content-inner">
-            <span>© 2026 Sajid Islam. All rights reserved. | Powered by</span>
-            <img src="data:image/png;base64,{logo_base64}" class="small-logo">
+            <span>© {datetime.now().year} Sajid Islam. All rights reserved. | Powered by</span>
+            <img src="data:image/png;base64,{logo_b64}" class="small-logo">
             <span style="font-weight: 600; color: #1a1a1b;">DEEN Commerce</span>
         </div>
     </div>
     """
     st.markdown(footer_html, unsafe_allow_html=True)
+
+# --- Main App ---
+
+def main():
+    st.set_page_config(page_title="Sales Dashboard", page_icon="📊", layout="wide")
+    apply_custom_styles()
+    
+    logo_b64 = load_logo()
+    render_sidebar()
+    
+    st.title("🚀 Sales Performance Dashboard")
+    
+    uploaded_file = st.file_uploader("Upload Sales Data (Excel or CSV)", type=['xlsx', 'csv'])
+    
+    if uploaded_file:
+        try:
+            df = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
+            st.success(f"Attached: {uploaded_file.name}")
+            
+            # Column Mapping
+            auto_cols = find_columns(df)
+            all_cols = list(df.columns)
+            
+            st.subheader("🛠️ Verify Column Mapping")
+            mc1, mc2, mc3, mc4, mc5, mc6 = st.columns(6)
+            
+            def get_idx(key):
+                return all_cols.index(auto_cols[key]) if key in auto_cols else 0
+
+            m_name = mc1.selectbox("Product Name", all_cols, index=get_idx('name'))
+            m_cost = mc2.selectbox("Price", all_cols, index=get_idx('cost'))
+            m_qty = mc3.selectbox("Quantity", all_cols, index=get_idx('qty'))
+            m_date = mc4.selectbox("Date (Opt)", ["None"] + all_cols, index=get_idx('date')+1 if 'date' in auto_cols else 0)
+            m_order = mc5.selectbox("Order ID (Opt)", ["None"] + all_cols, index=get_idx('order_id')+1 if 'order_id' in auto_cols else 0)
+            m_phone = mc6.selectbox("Phone (Opt)", ["None"] + all_cols, index=get_idx('phone')+1 if 'phone' in auto_cols else 0)
+            
+            mapping = {
+                'name': m_name, 'cost': m_cost, 'qty': m_qty,
+                'date': m_date if m_date != "None" else None,
+                'order_id': m_order if m_order != "None" else None,
+                'phone': m_phone if m_phone != "None" else None
+            }
+            
+            with st.expander("🔍 Preview Data"):
+                st.dataframe(df.head(10), use_container_width=True)
+
+            if st.button("Generate Analytics"):
+                results = process_analytics(df, mapping)
+                
+                # Metrics Row
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Orders", f"{results['total_orders']:,.0f}" if results['total_orders'] > 0 else "N/A")
+                m2.metric("Sold", f"{results['total_qty']:,.0f}")
+                m3.metric("Revenue", f"TK {results['total_rev']:,.2f}")
+                
+                # Show Basket Value if data available
+                if results['avg_basket_value'] > 0:
+                    m4.metric("Avg Basket (TK)", f"TK {results['avg_basket_value']:,.2f}")
+                else:
+                    m4.metric("Avg Basket", "N/A")
+
+                st.divider()
+                
+                # Visuals
+                v1, v2 = st.columns(2)
+                v1.plotly_chart(px.pie(results['summary'], values='Total Amount', names='Category', hole=0.5, title='Revenue by Category', color_discrete_sequence=px.colors.qualitative.Pastel), use_container_width=True)
+                v2.plotly_chart(px.bar(results['summary'].sort_values('Total Qty', ascending=False), x='Category', y='Total Qty', color='Category', title='Volume by Category'), use_container_width=True)
+                
+                # Data Tables
+                t1, t2, t3 = st.tabs(["📑 Breakdown", "🏆 Top Items", "🔍 Full List"])
+                with t1: st.dataframe(results['summary'].sort_values('Total Amount', ascending=False), use_container_width=True, hide_index=True)
+                with t2: st.dataframe(results['top_items'].head(20), use_container_width=True, hide_index=True)
+                with t3: st.dataframe(results['drilldown'], use_container_width=True, hide_index=True)
+                
+                # Export
+                buf = BytesIO()
+                with pd.ExcelWriter(buf, engine='xlsxwriter') as wr:
+                    results['summary'].to_excel(wr, sheet_name='Summary', index=False)
+                    results['top_items'].to_excel(wr, sheet_name='Rankings', index=False)
+                
+                fname = f"Sales_Report_{results['timeframe']}.xlsx"
+                st.download_button("📥 Download Report", data=buf.getvalue(), file_name=fname)
+                
+        except Exception as e:
+            st.error(f"Processing Error: {e}")
+            log_event("CRASH", str(e))
+
+    render_footer(logo_b64)
 
 if __name__ == "__main__":
     main()
