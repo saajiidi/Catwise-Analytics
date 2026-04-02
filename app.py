@@ -320,9 +320,23 @@ def apply_custom_styles():
             font-size: 0.9rem;
             backdrop-filter: blur(10px);
         }
+        
+        /* Force Whitish text in Dark Mode for Footer specifically */
+        [data-theme="dark"] .sticky-footer, 
+        [data-theme="dark"] .sticky-footer span,
+        [data-theme="dark"] .brand-name {
+            color: #f8f9fa !important;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .sticky-footer, .brand-name {
+                color: #f8f9fa !important;
+            }
+        }
+
         .brand-name {
             font-weight: 700;
-            color: var(--primary-color) !important;
+            color: var(--primary-color);
         }
 
         /* --- Responsive Design --- */
