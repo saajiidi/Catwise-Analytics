@@ -580,7 +580,9 @@ def main():
                 st.info(f"✨ **Auto-Mapped:** Name (**{mapping['name']}**), Price (**{mapping['cost']}**), Qty (**{mapping['qty']}**)")
             
             with st.expander("🔍 Preview Data"):
-                st.dataframe(df.head(10), use_container_width=True)
+                preview_df = df.head(10).copy()
+                preview_df.index = range(1, len(preview_df) + 1)
+                st.dataframe(preview_df, use_container_width=True)
 
             if st.button("Generate Analytics"):
                 results = process_analytics(df, mapping)
@@ -614,9 +616,19 @@ def main():
                 
                 # Data Tables
                 t1, t2, t3 = st.tabs(["📑 Breakdown", "🏆 Top Items", "🔍 Full List"])
-                with t1: st.dataframe(results['summary'].sort_values('Total Amount', ascending=False), use_container_width=True, hide_index=True)
-                with t2: st.dataframe(results['top_items'].head(20), use_container_width=True, hide_index=True)
-                with t3: st.dataframe(results['drilldown'], use_container_width=True, hide_index=True)
+                
+                df_breakdown = results['summary'].sort_values('Total Amount', ascending=False).copy()
+                df_breakdown.index = range(1, len(df_breakdown) + 1)
+                
+                df_top = results['top_items'].head(20).copy()
+                df_top.index = range(1, len(df_top) + 1)
+                
+                df_drill = results['drilldown'].copy()
+                df_drill.index = range(1, len(df_drill) + 1)
+
+                with t1: st.dataframe(df_breakdown, use_container_width=True)
+                with t2: st.dataframe(df_top, use_container_width=True)
+                with t3: st.dataframe(df_drill, use_container_width=True)
                 
                 # Export
                 buf = BytesIO()
