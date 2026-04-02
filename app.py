@@ -102,7 +102,12 @@ def apply_custom_styles():
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 8px;
+        }
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 2px;
         }
         .small-logo {
             height: 22px;
@@ -270,8 +275,10 @@ def render_footer(logo_b64):
     <div class="sticky-footer">
         <div class="footer-content-inner">
             <span>© {datetime.now().year} Sajid Islam. All rights reserved. | Powered by</span>
-            <img src="data:image/png;base64,{logo_b64}" class="small-logo">
-            <span style="font-weight: 600; color: #1a1a1b;">DEEN Commerce</span>
+            <div class="brand-wrapper">
+                <img src="data:image/png;base64,{logo_b64}" class="small-logo">
+                <span style="font-weight: 600; color: #1a1a1b;">DEEN Commerce</span>
+            </div>
         </div>
     </div>
     """
