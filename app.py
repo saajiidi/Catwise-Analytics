@@ -305,23 +305,30 @@ def apply_custom_styles():
             color: var(--text-color) !important;
         }
 
-        /* Sticky Footer - Dynamic Contrast */
+        /* Sticky Footer - Dynamic Contrast & Always Fixed */
         .sticky-footer {
-            position: fixed;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            position: fixed !important;
+            left: 0 !important;
+            bottom: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
             text-align: center;
-            padding: 18px 0;
+            padding: 20px 0;
             border-top: 1px solid rgba(128, 128, 128, 0.2);
-            z-index: 999;
+            z-index: 999999;
             font-size: 0.9rem;
             backdrop-filter: blur(10px);
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
         }
         
-        /* Force Whitish text in Dark Mode for Footer specifically */
+        [data-theme="dark"] .sticky-footer {
+            background-color: #0e1117 !important; /* Pure black/dark for contrast */
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.4);
+        }
+
+        /* Force Whitish text specifically in Dark Mode */
         [data-theme="dark"] .sticky-footer, 
         [data-theme="dark"] .sticky-footer span,
         [data-theme="dark"] .brand-name {
@@ -344,7 +351,7 @@ def apply_custom_styles():
             .block-container {
                 padding-left: 1rem !important;
                 padding-right: 1rem !important;
-                padding-bottom: 200px !important;
+                padding-bottom: 220px !important;
             }
             .footer-content-inner {
                 flex-direction: column;
@@ -353,10 +360,9 @@ def apply_custom_styles():
             [data-testid="stMetricValue"] {
                 font-size: 1.3rem !important;
             }
+            /* Keep footer fixed and prominent even on mobile */
             .sticky-footer {
-                position: relative !important;
-                background-color: transparent;
-                border-top: 1px solid rgba(128, 128, 128, 0.1);
+                padding: 15px 5px !important;
             }
         }
         """, unsafe_allow_html=True)
@@ -512,6 +518,7 @@ def render_sidebar():
 
 def render_footer(logo_b64):
     footer_html = f"""
+    <div style="height: 120px;"></div> <!-- Spacer to prevent content overlap -->
     <div class="sticky-footer">
         <div class="footer-content-inner">
             <span>© {datetime.now().year} Sajid Islam. All rights reserved. | </span>
