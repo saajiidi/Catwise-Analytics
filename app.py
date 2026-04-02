@@ -55,54 +55,143 @@ def apply_custom_styles():
     """Applies premium CSS styles to the dashboard."""
     st.markdown("""
         <style>
-        .main { background-color: #f8f9fa; }
-        .stMetric { 
-            background-color: #ffffff; 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid #eee;
+        /* Base Container */
+        .main { background-color: transparent; }
+        
+        /* Metric Styling - Premium Look */
+        div[data-testid="stMetric"] { 
+            background-color: var(--background-secondary, #ffffff); 
+            padding: 24px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid var(--secondary-background-color, #ececec);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
+        div[data-testid="stMetric"]:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+            border-color: #007bff;
+        }
+
+        /* Metric Label Support */
+        [data-testid="stMetricLabel"] {
+            font-weight: 600 !important;
+            font-size: 1.1rem !important;
+            margin-bottom: 8px !important;
+            color: var(--text-color, #1a1a1b) !important;
+        }
+
+        /* Metric Value - Ensure Full Visibility */
+        [data-testid="stMetricValue"], 
+        [data-testid="stMetricValue"] > div {
+            font-weight: 800 !important;
+            font-size: 1.5rem !important; /* Reduced for better fit on large numbers */
+            color: var(--text-color, #1a1a1b) !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            min-width: fit-content !important;
+        }
+
+        div[data-testid="stMetric"] {
+            overflow: visible !important;
+        }
+
+        /* Dark Mode Text Consistency - Users specifically want white text */
+        @media (prefers-color-scheme: dark) {
+            [data-testid="stMetricLabel"], 
+            [data-testid="stMetricValue"],
+            [data-testid="stMetricValue"] > div { 
+                color: #ffffff !important; 
+            }
+            div[data-testid="stMetric"] {
+                background-color: #1e1e1e !important;
+                border-color: #333 !important;
+            }
+        }
+
+        /* Streamlit Dark Theme Detection */
+        [data-theme="dark"] [data-testid="stMetricLabel"],
+        [data-theme="dark"] [data-testid="stMetricValue"],
+        [data-theme="dark"] [data-testid="stMetricValue"] > div {
+            color: #ffffff !important;
+        }
+        
+        [data-theme="dark"] div[data-testid="stMetric"] {
+            background-color: #1e1e1e !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 1px solid #333;
+        }
+
         .stButton>button { 
             width: 100%; 
-            border-radius: 8px; 
-            height: 3.2em; 
-            background-color: #007bff; 
+            border-radius: 12px; 
+            height: 3.5em; 
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); 
             color: white; 
             font-weight: 600;
+            border: none;
             transition: all 0.3s ease;
         }
         .stButton>button:hover {
-            background-color: #0056b3;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: scale(1.02);
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
         div[data-testid="stExpander"] { 
-            border: none; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            background: white;
-            border-radius: 10px;
-            margin-bottom: 1rem;
+            border: 1px solid var(--secondary-background-color, #eee); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: var(--background-secondary, white);
+            border-radius: 14px;
+            margin-bottom: 1.5rem;
+            padding: 5px;
+            transition: border-color 0.3s ease;
+        }
+        
+        [data-theme="dark"] div[data-testid="stExpander"] {
+            background-color: #1a1a1a !important;
+            border-color: #333 !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            div[data-testid="stExpander"] {
+                background-color: #1a1a1a !important;
+                border-color: #333 !important;
+            }
         }
         .sticky-footer {
             position: fixed;
             left: 0;
             bottom: 0;
             width: 100%;
-            background-color: rgba(255, 255, 255, 0.95);
-            color: #6c757d;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #495057;
             text-align: center;
-            padding: 15px 0;
+            padding: 18px 0;
             border-top: 1px solid #e9ecef;
             z-index: 999;
-            font-size: 0.85rem;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+            font-size: 0.9rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 -4px 30px rgba(0,0,0,0.06);
+        }
+        [data-theme="dark"] .sticky-footer {
+            background-color: rgba(18, 18, 18, 0.9) !important;
+            color: #ffffff !important;
+            border-top: 1px solid #333 !important;
+        }
+        @media (prefers-color-scheme: dark) {
+            .sticky-footer {
+                background-color: rgba(18, 18, 18, 0.9) !important;
+                color: #ffffff !important;
+            }
         }
         .footer-content-inner {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
         .brand-wrapper {
             display: flex;
@@ -110,15 +199,90 @@ def apply_custom_styles():
             gap: 2px;
         }
         .small-logo {
-            height: 22px;
+            height: 24px;
             width: auto;
-            filter: grayscale(20%);
+            filter: grayscale(0%);
         }
-        /* Dashboard Container Spacing */
+        .brand-name {
+            font-weight: 600;
+            color: #1a1a1b;
+        }
+        [data-theme="dark"] .brand-name {
+            color: #ffffff !important;
+        }
+        @media (prefers-color-scheme: dark) {
+            .brand-name {
+                color: #ffffff !important;
+            }
+        }
         .block-container {
-            padding-bottom: 100px !important;
+            padding-bottom: 120px !important;
+            padding-top: 3rem !important;
         }
-        </style>
+
+        /* --- Responsive Design --- */
+        
+        /* Small Laptops & Tablets (1024px and down) */
+        @media (max-width: 1024px) {
+            [data-testid="stMetricValue"] {
+                font-size: 1.4rem !important;
+            }
+            [data-testid="stMetric"] {
+                padding: 18px !important;
+            }
+        }
+
+        /* Mobile Devices (768px and down) */
+        @media (max-width: 768px) {
+            /* Adjust padding for mobile */
+            .block-container {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                padding-top: 2rem !important;
+                padding-bottom: 180px !important; /* More space for stacked footer */
+            }
+
+            /* Metrics stacking and sizing */
+            [data-testid="stMetricValue"] {
+                font-size: 1.25rem !important;
+            }
+            [data-testid="stMetricLabel"] {
+                font-size: 0.9rem !important;
+            }
+            div[data-testid="stMetric"] {
+                padding: 16px !important;
+                margin-bottom: 0.8rem !important;
+            }
+
+            /* Footer adjustments */
+            .sticky-footer {
+                padding: 12px 10px;
+            }
+            .footer-content-inner {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .brand-name { font-size: 0.85rem; }
+            
+            /* Button adjustments */
+            .stButton>button {
+                height: 3em;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Very Small Screens (480px and down) */
+        @media (max-width: 480px) {
+            .sticky-footer {
+                position: relative !important; /* Unstick on tiny screens to save space */
+                box-shadow: none;
+                border-top: 1px solid #eee;
+                background: transparent;
+            }
+            .block-container {
+                padding-bottom: 2rem !important;
+            }
+        }
         """, unsafe_allow_html=True)
 
 # --- Helper Functions ---
@@ -274,10 +438,11 @@ def render_footer(logo_b64):
     footer_html = f"""
     <div class="sticky-footer">
         <div class="footer-content-inner">
-            <span>© {datetime.now().year} Sajid Islam. All rights reserved. | Powered by</span>
+            <span>© {datetime.now().year} Sajid Islam. All rights reserved. | </span>
             <div class="brand-wrapper">
+                <span style="opacity: 0.85;">Powered by</span>
                 <img src="data:image/png;base64,{logo_b64}" class="small-logo">
-                <span style="font-weight: 600; color: #1a1a1b;">DEEN Commerce</span>
+                <span class="brand-name">DEEN Commerce</span>
             </div>
         </div>
     </div>
@@ -305,26 +470,38 @@ def main():
             # Column Mapping
             auto_cols = find_columns(df)
             all_cols = list(df.columns)
+            mandatory_keys = ['name', 'cost', 'qty']
+            is_mapped = all(k in auto_cols for k in mandatory_keys)
             
-            st.subheader("🛠️ Verify Column Mapping")
-            mc1, mc2, mc3, mc4, mc5, mc6 = st.columns(6)
-            
-            def get_idx(key):
-                return all_cols.index(auto_cols[key]) if key in auto_cols else 0
+            if not is_mapped:
+                st.subheader("🛠️ Verify Column Mapping")
+                st.warning("⚠️ System couldn't auto-detect all mandatory columns. Please map them manually.")
+                mc1, mc2, mc3, mc4, mc5, mc6 = st.columns(6)
+                
+                def get_idx(key):
+                    return all_cols.index(auto_cols[key]) if key in auto_cols else 0
 
-            m_name = mc1.selectbox("Product Name", all_cols, index=get_idx('name'))
-            m_cost = mc2.selectbox("Price", all_cols, index=get_idx('cost'))
-            m_qty = mc3.selectbox("Quantity", all_cols, index=get_idx('qty'))
-            m_date = mc4.selectbox("Date (Opt)", ["None"] + all_cols, index=get_idx('date')+1 if 'date' in auto_cols else 0)
-            m_order = mc5.selectbox("Order ID (Opt)", ["None"] + all_cols, index=get_idx('order_id')+1 if 'order_id' in auto_cols else 0)
-            m_phone = mc6.selectbox("Phone (Opt)", ["None"] + all_cols, index=get_idx('phone')+1 if 'phone' in auto_cols else 0)
-            
-            mapping = {
-                'name': m_name, 'cost': m_cost, 'qty': m_qty,
-                'date': m_date if m_date != "None" else None,
-                'order_id': m_order if m_order != "None" else None,
-                'phone': m_phone if m_phone != "None" else None
-            }
+                m_name = mc1.selectbox("Product Name", all_cols, index=get_idx('name'))
+                m_cost = mc2.selectbox("Price", all_cols, index=get_idx('cost'))
+                m_qty = mc3.selectbox("Quantity", all_cols, index=get_idx('qty'))
+                m_date = mc4.selectbox("Date (Opt)", ["None"] + all_cols, index=get_idx('date')+1 if 'date' in auto_cols else 0)
+                m_order = mc5.selectbox("Order ID (Opt)", ["None"] + all_cols, index=get_idx('order_id')+1 if 'order_id' in auto_cols else 0)
+                m_phone = mc6.selectbox("Phone (Opt)", ["None"] + all_cols, index=get_idx('phone')+1 if 'phone' in auto_cols else 0)
+                
+                mapping = {
+                    'name': m_name, 'cost': m_cost, 'qty': m_qty,
+                    'date': m_date if m_date != "None" else None,
+                    'order_id': m_order if m_order != "None" else None,
+                    'phone': m_phone if m_phone != "None" else None
+                }
+            else:
+                mapping = {
+                    'name': auto_cols['name'], 'cost': auto_cols['cost'], 'qty': auto_cols['qty'],
+                    'date': auto_cols.get('date'),
+                    'order_id': auto_cols.get('order_id'),
+                    'phone': auto_cols.get('phone')
+                }
+                st.info(f"✨ **Auto-Mapped:** Name (**{mapping['name']}**), Price (**{mapping['cost']}**), Qty (**{mapping['qty']}**)")
             
             with st.expander("🔍 Preview Data"):
                 st.dataframe(df.head(10), use_container_width=True)
@@ -334,15 +511,15 @@ def main():
                 
                 # Metrics Row
                 m1, m2, m3, m4 = st.columns(4)
-                m1.metric("Orders", f"{results['total_orders']:,.0f}" if results['total_orders'] > 0 else "N/A")
-                m2.metric("Sold", f"{results['total_qty']:,.0f}")
-                m3.metric("Revenue", f"TK {results['total_rev']:,.2f}")
+                m1.metric("Total Orders", f"{results['total_orders']:,.0f}")
+                m2.metric("Units Sold", f"{results['total_qty']:,.0f}")
+                m3.metric("Gross Revenue", f"TK {results['total_rev']:,.2f}")
                 
                 # Show Basket Value if data available
                 if results['avg_basket_value'] > 0:
-                    m4.metric("Avg Basket (TK)", f"TK {results['avg_basket_value']:,.2f}")
+                    m4.metric("Basket Size", f"TK {results['avg_basket_value']:,.2f}")
                 else:
-                    m4.metric("Avg Basket", "N/A")
+                    m4.metric("Basket Size", "0.00")
 
                 st.divider()
                 
