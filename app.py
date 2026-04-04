@@ -302,22 +302,30 @@ def main():
             df = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
             st.success(f"Attached: {uploaded_file.name}")
             
-            # Column Mapping
+            with st.expander("🔍 Preview Data", expanded=False):
+                st.dataframe(df.head(10), use_container_width=True)
+
+            # Column Mapping Section
             auto_cols = find_columns(df)
             all_cols = list(df.columns)
             
-            st.subheader("🛠️ Verify Column Mapping")
-            mc1, mc2, mc3, mc4, mc5, mc6 = st.columns(6)
+            st.markdown("---")
+            st.subheader("🛠️ Column Mapping Configuration")
+            st.info("Verify assignments below to ensure data accuracy. The system has pre-selected the best matches.")
+            
+            mc1, mc2, mc3 = st.columns(3)
+            mc4, mc5, mc6 = st.columns(3)
             
             def get_idx(key):
                 return all_cols.index(auto_cols[key]) if key in auto_cols else 0
 
-            m_name = mc1.selectbox("Product Name", all_cols, index=get_idx('name'))
-            m_cost = mc2.selectbox("Price", all_cols, index=get_idx('cost'))
-            m_qty = mc3.selectbox("Quantity", all_cols, index=get_idx('qty'))
-            m_date = mc4.selectbox("Date (Opt)", ["None"] + all_cols, index=get_idx('date')+1 if 'date' in auto_cols else 0)
-            m_order = mc5.selectbox("Order ID (Opt)", ["None"] + all_cols, index=get_idx('order_id')+1 if 'order_id' in auto_cols else 0)
-            m_phone = mc6.selectbox("Phone (Opt)", ["None"] + all_cols, index=get_idx('phone')+1 if 'phone' in auto_cols else 0)
+            m_name = mc1.selectbox("Product Name", all_cols, index=get_idx('name'), help="Column containing product names")
+            m_cost = mc2.selectbox("Price/Cost", all_cols, index=get_idx('cost'), help="Column containing unit price or cost")
+            m_qty = mc3.selectbox("Quantity", all_cols, index=get_idx('qty'), help="Column containing units sold")
+            
+            m_date = mc4.selectbox("Date (Optional)", ["None"] + all_cols, index=get_idx('date')+1 if 'date' in auto_cols else 0)
+            m_order = mc5.selectbox("Order ID (Optional)", ["None"] + all_cols, index=get_idx('order_id')+1 if 'order_id' in auto_cols else 0)
+            m_phone = mc6.selectbox("Phone (Optional)", ["None"] + all_cols, index=get_idx('phone')+1 if 'phone' in auto_cols else 0)
             
             mapping = {
                 'name': m_name, 'cost': m_cost, 'qty': m_qty,
@@ -325,9 +333,6 @@ def main():
                 'order_id': m_order if m_order != "None" else None,
                 'phone': m_phone if m_phone != "None" else None
             }
-            
-            with st.expander("🔍 Preview Data"):
-                st.dataframe(df.head(10), use_container_width=True)
 
             if st.button("Generate Analytics"):
                 results = process_analytics(df, mapping)
