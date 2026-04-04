@@ -55,54 +55,143 @@ def apply_custom_styles():
     """Applies premium CSS styles to the dashboard."""
     st.markdown("""
         <style>
-        .main { background-color: #f8f9fa; }
-        .stMetric { 
-            background-color: #ffffff; 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid #eee;
+        /* Base Container */
+        .main { background-color: transparent; }
+        
+        /* Metric Styling - Premium Look */
+        div[data-testid="stMetric"] { 
+            background-color: var(--background-secondary, #ffffff); 
+            padding: 24px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid var(--secondary-background-color, #ececec);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
+        div[data-testid="stMetric"]:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+            border-color: #007bff;
+        }
+
+        /* Metric Label Support */
+        [data-testid="stMetricLabel"] {
+            font-weight: 600 !important;
+            font-size: 1.1rem !important;
+            margin-bottom: 8px !important;
+            color: var(--text-color, #1a1a1b) !important;
+        }
+
+        /* Metric Value - Ensure Full Visibility */
+        [data-testid="stMetricValue"], 
+        [data-testid="stMetricValue"] > div {
+            font-weight: 800 !important;
+            font-size: 1.5rem !important; /* Reduced for better fit on large numbers */
+            color: var(--text-color, #1a1a1b) !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            min-width: fit-content !important;
+        }
+
+        div[data-testid="stMetric"] {
+            overflow: visible !important;
+        }
+
+        /* Dark Mode Text Consistency - Users specifically want white text */
+        @media (prefers-color-scheme: dark) {
+            [data-testid="stMetricLabel"], 
+            [data-testid="stMetricValue"],
+            [data-testid="stMetricValue"] > div { 
+                color: #ffffff !important; 
+            }
+            div[data-testid="stMetric"] {
+                background-color: #1e1e1e !important;
+                border-color: #333 !important;
+            }
+        }
+
+        /* Streamlit Dark Theme Detection */
+        [data-theme="dark"] [data-testid="stMetricLabel"],
+        [data-theme="dark"] [data-testid="stMetricValue"],
+        [data-theme="dark"] [data-testid="stMetricValue"] > div {
+            color: #ffffff !important;
+        }
+        
+        [data-theme="dark"] div[data-testid="stMetric"] {
+            background-color: #1e1e1e !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 1px solid #333;
+        }
+
         .stButton>button { 
             width: 100%; 
-            border-radius: 8px; 
-            height: 3.2em; 
-            background-color: #007bff; 
+            border-radius: 12px; 
+            height: 3.5em; 
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); 
             color: white; 
             font-weight: 600;
+            border: none;
             transition: all 0.3s ease;
         }
         .stButton>button:hover {
-            background-color: #0056b3;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: scale(1.02);
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
         div[data-testid="stExpander"] { 
-            border: none; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            background: white;
-            border-radius: 10px;
-            margin-bottom: 1rem;
+            border: 1px solid var(--secondary-background-color, #eee); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: var(--background-secondary, white);
+            border-radius: 14px;
+            margin-bottom: 1.5rem;
+            padding: 5px;
+            transition: border-color 0.3s ease;
+        }
+        
+        [data-theme="dark"] div[data-testid="stExpander"] {
+            background-color: #1a1a1a !important;
+            border-color: #333 !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            div[data-testid="stExpander"] {
+                background-color: #1a1a1a !important;
+                border-color: #333 !important;
+            }
         }
         .sticky-footer {
             position: fixed;
             left: 0;
             bottom: 0;
             width: 100%;
-            background-color: rgba(255, 255, 255, 0.95);
-            color: #6c757d;
+            background-color: #ffffff; /* Pure white in light mode */
+            color: #000000 !important; /* Pure black in light mode */
             text-align: center;
-            padding: 15px 0;
+            padding: 18px 0;
             border-top: 1px solid #e9ecef;
             z-index: 999;
-            font-size: 0.85rem;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+            font-size: 0.9rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 -4px 30px rgba(0,0,0,0.06);
+        }
+        [data-theme="dark"] .sticky-footer {
+            background-color: #121212 !important; /* Pure dark in dark mode */
+            color: #ffffff !important;
+            border-top: 1px solid #333 !important;
+        }
+        @media (prefers-color-scheme: dark) {
+            .sticky-footer {
+                background-color: #121212 !important;
+                color: #ffffff !important;
+            }
         }
         .footer-content-inner {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
         .brand-wrapper {
             display: flex;
@@ -110,15 +199,172 @@ def apply_custom_styles():
             gap: 2px;
         }
         .small-logo {
-            height: 22px;
+            height: 24px;
             width: auto;
-            filter: grayscale(20%);
+            filter: grayscale(0%);
         }
-        /* Dashboard Container Spacing */
+        .brand-name {
+            font-weight: 600;
+            color: #000000; /* Pure black in light mode */
+        }
+        [data-theme="dark"] .brand-name {
+            color: #ffffff !important;
+        }
+        @media (prefers-color-scheme: dark) {
+            .brand-name {
+                color: #ffffff !important;
+            }
+        }
         .block-container {
-            padding-bottom: 100px !important;
+            padding-bottom: 150px !important;
+            padding-top: 3rem !important;
         }
-        </style>
+
+        /* --- Theme-Aware Dynamic Styling --- */
+        
+        /* Universal Typography */
+        h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {
+            color: var(--text-color) !important;
+        }
+
+        /* Metric Styling - Fully Dynamic */
+        div[data-testid="stMetric"] { 
+            background-color: var(--secondary-background-color); 
+            padding: 24px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(128, 128, 128, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        div[data-testid="stMetric"]:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
+
+        [data-testid="stMetricLabel"] {
+            font-weight: 600 !important;
+            opacity: 0.8;
+            color: var(--text-color) !important;
+        }
+
+        [data-testid="stMetricValue"], 
+        [data-testid="stMetricValue"] > div {
+            font-weight: 800 !important;
+            font-size: 1.6rem !important;
+            color: var(--text-color) !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+        }
+
+        /* UI Components - Inputs & Selectboxes */
+        div[data-testid="stSelectbox"] > div, 
+        div[data-testid="stTextInput"] > div,
+        div[data-testid="stTextArea"] > div {
+            background-color: var(--secondary-background-color) !important;
+            color: var(--text-color) !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(128, 128, 128, 0.2) !important;
+        }
+
+        /* Buttons - High Contrast Primary */
+        .stButton>button { 
+            width: 100%; 
+            border-radius: 12px; 
+            height: 3.5em; 
+            background-color: var(--primary-color) !important;
+            color: white !important; /* Buttons usually have white text regardless of theme */
+            font-weight: 700;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .stButton>button:hover {
+            opacity: 0.9;
+            transform: scale(1.01);
+        }
+
+        /* Tabs & Dividers */
+        div[data-testid="stTabs"] button {
+            color: var(--text-color) !important;
+            opacity: 0.7;
+        }
+        div[data-testid="stTabs"] button[aria-selected="true"] {
+            color: var(--primary-color) !important;
+            opacity: 1;
+            border-bottom: 2px solid var(--primary-color) !important;
+        }
+        hr { border-color: rgba(128, 128, 128, 0.2) !important; }
+
+        /* Expander & Notifications */
+        div[data-testid="stExpander"], div[data-testid="stNotification"] {
+            background-color: var(--secondary-background-color) !important;
+            border: 1px solid rgba(128, 128, 128, 0.1) !important;
+            border-radius: 14px !important;
+            color: var(--text-color) !important;
+        }
+
+        /* Sticky Footer - Dynamic Contrast & Always Fixed */
+        .sticky-footer {
+            position: fixed !important;
+            left: 0 !important;
+            bottom: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid rgba(128, 128, 128, 0.2);
+            z-index: 999999;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
+        }
+        
+        [data-theme="dark"] .sticky-footer {
+            background-color: #0e1117 !important; /* Pure black/dark for contrast */
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.4);
+        }
+
+        /* Force Whitish text specifically in Dark Mode */
+        [data-theme="dark"] .sticky-footer, 
+        [data-theme="dark"] .sticky-footer span,
+        [data-theme="dark"] .brand-name {
+            color: #f8f9fa !important;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .sticky-footer, .brand-name {
+                color: #f8f9fa !important;
+            }
+        }
+
+        .brand-name {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .block-container {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                padding-bottom: 220px !important;
+            }
+            .footer-content-inner {
+                flex-direction: column;
+                gap: 8px;
+            }
+            [data-testid="stMetricValue"] {
+                font-size: 1.3rem !important;
+            }
+            /* Keep footer fixed and prominent even on mobile */
+            .sticky-footer {
+                padding: 15px 5px !important;
+            }
+        }
         """, unsafe_allow_html=True)
 
 # --- Helper Functions ---
@@ -272,12 +518,14 @@ def render_sidebar():
 
 def render_footer(logo_b64):
     footer_html = f"""
+    <div style="height: 120px;"></div> <!-- Spacer to prevent content overlap -->
     <div class="sticky-footer">
         <div class="footer-content-inner">
-            <span>© {datetime.now().year} Sajid Islam. All rights reserved. | Powered by</span>
+            <span>© {datetime.now().year} Sajid Islam. All rights reserved. | </span>
             <div class="brand-wrapper">
+                <span style="opacity: 0.85;">Powered by</span>
                 <img src="data:image/png;base64,{logo_b64}" class="small-logo">
-                <span style="font-weight: 600; color: #1a1a1b;">DEEN Commerce</span>
+                <span class="brand-name">DEEN Commerce</span>
             </div>
         </div>
     </div>
@@ -308,24 +556,21 @@ def main():
             # Column Mapping Section
             auto_cols = find_columns(df)
             all_cols = list(df.columns)
+            mandatory_keys = ['name', 'cost', 'qty']
+            is_mapped = all(k in auto_cols for k in mandatory_keys)
             
-            st.markdown("---")
-            st.subheader("🛠️ Column Mapping Configuration")
-            st.info("Verify assignments below to ensure data accuracy. The system has pre-selected the best matches.")
-            
-            mc1, mc2, mc3 = st.columns(3)
-            mc4, mc5, mc6 = st.columns(3)
+            st.subheader("🛠️ Verify Column Mapping")
+            mc1, mc2, mc3, mc4, mc5, mc6 = st.columns(6)
             
             def get_idx(key):
                 return all_cols.index(auto_cols[key]) if key in auto_cols else 0
 
-            m_name = mc1.selectbox("Product Name", all_cols, index=get_idx('name'), help="Column containing product names")
-            m_cost = mc2.selectbox("Price/Cost", all_cols, index=get_idx('cost'), help="Column containing unit price or cost")
-            m_qty = mc3.selectbox("Quantity", all_cols, index=get_idx('qty'), help="Column containing units sold")
-            
-            m_date = mc4.selectbox("Date (Optional)", ["None"] + all_cols, index=get_idx('date')+1 if 'date' in auto_cols else 0)
-            m_order = mc5.selectbox("Order ID (Optional)", ["None"] + all_cols, index=get_idx('order_id')+1 if 'order_id' in auto_cols else 0)
-            m_phone = mc6.selectbox("Phone (Optional)", ["None"] + all_cols, index=get_idx('phone')+1 if 'phone' in auto_cols else 0)
+            m_name = mc1.selectbox("Product Name", all_cols, index=get_idx('name'))
+            m_cost = mc2.selectbox("Price", all_cols, index=get_idx('cost'))
+            m_qty = mc3.selectbox("Quantity", all_cols, index=get_idx('qty'))
+            m_date = mc4.selectbox("Date (Opt)", ["None"] + all_cols, index=get_idx('date')+1 if 'date' in auto_cols else 0)
+            m_order = mc5.selectbox("Order ID (Opt)", ["None"] + all_cols, index=get_idx('order_id')+1 if 'order_id' in auto_cols else 0)
+            m_phone = mc6.selectbox("Phone (Opt)", ["None"] + all_cols, index=get_idx('phone')+1 if 'phone' in auto_cols else 0)
             
             mapping = {
                 'name': m_name, 'cost': m_cost, 'qty': m_qty,
@@ -333,21 +578,24 @@ def main():
                 'order_id': m_order if m_order != "None" else None,
                 'phone': m_phone if m_phone != "None" else None
             }
+            
+            with st.expander("🔍 Preview Data"):
+                st.dataframe(df.head(10), use_container_width=True)
 
             if st.button("Generate Analytics"):
                 results = process_analytics(df, mapping)
                 
                 # Metrics Row
                 m1, m2, m3, m4 = st.columns(4)
-                m1.metric("Orders", f"{results['total_orders']:,.0f}" if results['total_orders'] > 0 else "N/A")
-                m2.metric("Sold", f"{results['total_qty']:,.0f}")
-                m3.metric("Revenue", f"TK {results['total_rev']:,.2f}")
+                m1.metric("Total Orders", f"{results['total_orders']:,.0f}")
+                m2.metric("Units Sold", f"{results['total_qty']:,.0f}")
+                m3.metric("Gross Revenue", f"TK {results['total_rev']:,.2f}")
                 
                 # Show Basket Value if data available
                 if results['avg_basket_value'] > 0:
-                    m4.metric("Avg Basket (TK)", f"TK {results['avg_basket_value']:,.2f}")
+                    m4.metric("Basket Size", f"TK {results['avg_basket_value']:,.2f}")
                 else:
-                    m4.metric("Avg Basket", "N/A")
+                    m4.metric("Basket Size", "0.00")
 
                 st.divider()
                 
@@ -366,9 +614,19 @@ def main():
                 
                 # Data Tables
                 t1, t2, t3 = st.tabs(["📑 Breakdown", "🏆 Top Items", "🔍 Full List"])
-                with t1: st.dataframe(results['summary'].sort_values('Total Amount', ascending=False), use_container_width=True, hide_index=True)
-                with t2: st.dataframe(results['top_items'].head(20), use_container_width=True, hide_index=True)
-                with t3: st.dataframe(results['drilldown'], use_container_width=True, hide_index=True)
+                
+                df_breakdown = results['summary'].sort_values('Total Amount', ascending=False).copy()
+                df_breakdown.index = range(1, len(df_breakdown) + 1)
+                
+                df_top = results['top_items'].head(20).copy()
+                df_top.index = range(1, len(df_top) + 1)
+                
+                df_drill = results['drilldown'].copy()
+                df_drill.index = range(1, len(df_drill) + 1)
+
+                with t1: st.dataframe(df_breakdown, use_container_width=True)
+                with t2: st.dataframe(df_top, use_container_width=True)
+                with t3: st.dataframe(df_drill, use_container_width=True)
                 
                 # Export
                 buf = BytesIO()
