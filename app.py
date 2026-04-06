@@ -524,7 +524,7 @@ def render_footer(logo_b64):
             <div class="brand-wrapper">
                 <span style="opacity: 0.85;">Powered by</span>
                 <img src="data:image/png;base64,{logo_b64}" class="small-logo">
-                <span class="brand-name">DEEN Commerce</span>
+                <span class="brand-name">DEEN Commerce Ltd.</span>
             </div>
         </div>
     </div>
