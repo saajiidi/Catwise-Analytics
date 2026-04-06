@@ -6,6 +6,7 @@ import json
 import base64
 from datetime import datetime
 from io import BytesIO
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 # --- Configuration & Styling ---
 FEEDBACK_DIR = "feedback"
@@ -587,13 +588,13 @@ def main():
                 m1, m2, m3, m4 = st.columns(4)
                 m1.metric("Total Orders", f"{results['total_orders']:,.0f}")
                 m2.metric("Units Sold", f"{results['total_qty']:,.0f}")
-                m3.metric("Gross Revenue", f"TK {results['total_rev']:,.2f}")
+                m3.metric("Gross Revenue", f"TK {results['total_rev']:,.0f}")
                 
                 # Show Basket Value if data available
                 if results['avg_basket_value'] > 0:
-                    m4.metric("Basket Size", f"TK {results['avg_basket_value']:,.2f}")
+                    m4.metric("Basket Size", f"TK {results['avg_basket_value']:,.0f}")
                 else:
-                    m4.metric("Basket Size", "0.00")
+                    m4.metric("Basket Size", "0")
 
                 st.divider()
                 
@@ -613,7 +614,7 @@ def main():
                 # Data Tables
                 t1, t2 = st.tabs(["📊 Category Summary", "💰 Price-wise Category"])
                 
-                df_breakdown = results['summary'].sort_values('Total Qty', ascending=False).copy()
+                df_breakdown = results['summary'].sort_values('Category', ascending=True).copy()
                 
                 # Add Total Sales Row
                 total_qty = df_breakdown['Total Qty'].sum()
@@ -626,6 +627,9 @@ def main():
                 
                 df_drill = results['drilldown'].sort_values(['Category', 'Price'], ascending=[True, False]).copy()
                 df_drill.columns = ['Category', 'Price', 'Qty', 'Total Amount']
+                
+                # Add Total Row
+                df_drill.loc[len(df_drill) + 1] = ['TOTAL (All Categories)', None, df_drill['Qty'].sum(), df_drill['Total Amount'].sum()]
                 df_drill.index = range(1, len(df_drill) + 1)
 
                 with t1: 
@@ -636,9 +640,66 @@ def main():
                 
                 # Export
                 buf = BytesIO()
-                with pd.ExcelWriter(buf, engine='xlsxwriter') as wr:
-                    df_breakdown.to_excel(wr, sheet_name='Category Summary', index=False)
-                    df_drill.to_excel(wr, sheet_name='Price-wise Category', index=False)
+                with pd.ExcelWriter(buf, engine='openpyxl') as writer:
+                    df_breakdown.to_excel(writer, sheet_name='Category Summary', index=False)
+                    df_drill.to_excel(writer, sheet_name='Price-wise Category', index=False)
+                    
+                    # Access workbook
+                    wb = writer.book
+                    
+                    # Define Styles
+                    header_fill = PatternFill(start_color='007BFF', end_color='007BFF', fill_type='solid')
+                    header_font = Font(bold=True, color='FFFFFF')
+                    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), 
+                                       top=Side(style='thin'), bottom=Side(style='thin'))
+                    
+                    for sheet_name in ['Category Summary', 'Price-wise Category']:
+                        ws = wb[sheet_name]
+                        dframe = df_breakdown if sheet_name == 'Category Summary' else df_drill
+                        
+                        # Style Header Row
+                        for cell in ws[1]:
+                            cell.fill = header_fill
+                            cell.font = header_font
+                            cell.alignment = Alignment(horizontal='center', vertical='center')
+                            cell.border = thin_border
+                        
+                        # Freeze the header row
+                        ws.freeze_panes = 'A2'
+                        
+                        # Styles for data rows
+                        total_fill = PatternFill(start_color='ECECEC', end_color='ECECEC', fill_type='solid')
+                        
+                        # Auto-adjust column widths and cell styling
+                        for i, col_name in enumerate(dframe.columns):
+                            # The column letter
+                            col_letter = ws.cell(row=1, column=i+1).column_letter
+                            
+                            # Content max width
+                            content_max = dframe[col_name].astype(str).map(len).max() if not dframe.empty else 0
+                            max_len = max(content_max, len(col_name)) + 2
+                            ws.column_dimensions[col_letter].width = max_len
+                            
+                            # Data rows cell styling
+                            for row_idx in range(2, ws.max_row + 1):
+                                cell = ws.cell(row=row_idx, column=i+1)
+                                cell.border = thin_border
+                                
+                                # Highlight total row
+                                first_cell_val = str(ws.cell(row=row_idx, column=1).value).upper()
+                                if 'TOTAL' in first_cell_val:
+                                    cell.font = Font(bold=True)
+                                    cell.fill = total_fill
+                                
+                                # Category specific alignment
+                                if col_name == 'Category':
+                                    cell.alignment = Alignment(horizontal='left')
+                                else:
+                                    cell.alignment = Alignment(horizontal='right')
+                                
+                                # Format Numbers (No .00 after TK)
+                                if any(x in col_name for x in ['Qty', 'Price', 'Amount']):
+                                    cell.number_format = '#,##0'
                 
                 fname = f"Sales_Report_{results['timeframe']}.xlsx"
                 st.download_button("📥 Download Report", data=buf.getvalue(), file_name=fname)
