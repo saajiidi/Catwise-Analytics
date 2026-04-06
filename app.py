@@ -436,11 +436,22 @@ def process_analytics(df, mapping):
     """Core data processing and metric calculation."""
     df = df.copy()
     
-    # 1. Clean Data
+    # 1. Clean Data (Handle commas, currency symbols, and whitespace)
     df['Clean_Name'] = df[mapping['name']].fillna('Unknown').astype(str)
     df = df[~df['Clean_Name'].str.contains('Choose Any', case=False, na=False)]
-    df['Clean_Cost'] = pd.to_numeric(df[mapping['cost']], errors='coerce').fillna(0)
-    df['Clean_Qty'] = pd.to_numeric(df[mapping['qty']], errors='coerce').fillna(0)
+
+    def clean_numeric(val):
+        if pd.isna(val): return 0
+        if isinstance(val, (int, float)): return val
+        # Remove everything except digits and decimal point
+        clean_val = ''.join(c for c in str(val) if c.isdigit() or c == '.')
+        try:
+            return float(clean_val) if clean_val else 0
+        except ValueError:
+            return 0
+
+    df['Clean_Cost'] = df[mapping['cost']].apply(clean_numeric)
+    df['Clean_Qty'] = df[mapping['qty']].apply(clean_numeric)
     df.loc[df['Clean_Qty'] < 0, 'Clean_Qty'] = 0
     df['Total Amount'] = df['Clean_Cost'] * df['Clean_Qty']
     df['Category'] = df['Clean_Name'].apply(get_product_category)
@@ -636,7 +647,7 @@ def main():
                     st.dataframe(df_breakdown[['Category', 'Total Qty', 'Total Amount']], use_container_width=True)
                 
                 with t2: 
-                    st.dataframe(df_drill[['Category', 'Price', 'Qty']], use_container_width=True)
+                    st.dataframe(df_drill[['Category', 'Price', 'Qty', 'Total Amount']], use_container_width=True)
                 
                 # Export
                 buf = BytesIO()
