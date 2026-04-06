@@ -416,7 +416,7 @@ def find_columns(df):
     }
     found = {}
     actual_cols = list(df.columns)
-    lower_cols = [c.strip().lower() for c in actual_cols]
+    lower_cols = [str(c).strip().lower() for c in actual_cols]
     
     for key, aliases in mapping.items():
         # Exact match
@@ -676,8 +676,8 @@ def main():
                             col_letter = ws.cell(row=1, column=i+1).column_letter
                             
                             # Content max width
-                            content_max = dframe[col_name].astype(str).map(len).max() if not dframe.empty else 0
-                            max_len = max(content_max, len(col_name)) + 2
+                            content_max = dframe[col_name].apply(lambda x: len(str(x)) if pd.notnull(x) else 0).max() if not dframe.empty else 0
+                            max_len = max(content_max, len(str(col_name))) + 2
                             ws.column_dimensions[col_letter].width = max_len
                             
                             # Data rows cell styling
