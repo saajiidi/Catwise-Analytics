@@ -462,11 +462,9 @@ def process_analytics(df, mapping):
     
     t_rev = summary['Total Amount'].sum()
     t_qty = summary['Total Qty'].sum()
-    if t_rev > 0: summary['Revenue Share (%)'] = (summary['Total Amount'] / t_rev * 100).round(2)
-    if t_qty > 0: summary['Quantity Share (%)'] = (summary['Total Qty'] / t_qty * 100).round(2)
     
     drilldown = df.groupby(['Category', 'Clean_Cost']).agg({'Clean_Qty': 'sum', 'Total Amount': 'sum'}).reset_index()
-    drilldown.columns = ['Category', 'Price (TK)', 'Total Qty', 'Total Amount']
+    drilldown.columns = ['Category', 'Price', 'Total Qty', 'Total Amount']
     
     top_items = df.groupby('Clean_Name').agg({'Clean_Qty': 'sum', 'Total Amount': 'sum', 'Category': 'first'}).reset_index()
     top_items.columns = ['Product Name', 'Total Qty', 'Total Amount', 'Category']
@@ -613,26 +611,34 @@ def main():
                                        title='Volume by Category', color_discrete_sequence=color_seq), use_container_width=True)
                 
                 # Data Tables
-                t1, t2, t3 = st.tabs(["📑 Breakdown", "🏆 Top Items", "🔍 Full List"])
+                t1, t2 = st.tabs(["📊 Category Summary", "💰 Price-wise Category"])
                 
-                df_breakdown = results['summary'].sort_values('Total Amount', ascending=False).copy()
+                df_breakdown = results['summary'].sort_values('Total Qty', ascending=False).copy()
+                
+                # Add Total Sales Row
+                total_qty = df_breakdown['Total Qty'].sum()
+                total_amount = df_breakdown['Total Amount'].sum()
+                
+                # Append row directly (using loc to avoid append/concat warnings)
+                df_breakdown.loc[len(df_breakdown) + 1] = ['TOTAL SALES (Summary)', total_qty, total_amount]
+                
                 df_breakdown.index = range(1, len(df_breakdown) + 1)
                 
-                df_top = results['top_items'].head(20).copy()
-                df_top.index = range(1, len(df_top) + 1)
-                
-                df_drill = results['drilldown'].copy()
+                df_drill = results['drilldown'].sort_values(['Category', 'Price'], ascending=[True, False]).copy()
+                df_drill.columns = ['Category', 'Price', 'Qty', 'Total Amount']
                 df_drill.index = range(1, len(df_drill) + 1)
 
-                with t1: st.dataframe(df_breakdown, use_container_width=True)
-                with t2: st.dataframe(df_top, use_container_width=True)
-                with t3: st.dataframe(df_drill, use_container_width=True)
+                with t1: 
+                    st.dataframe(df_breakdown[['Category', 'Total Qty', 'Total Amount']], use_container_width=True)
+                
+                with t2: 
+                    st.dataframe(df_drill[['Category', 'Price', 'Qty']], use_container_width=True)
                 
                 # Export
                 buf = BytesIO()
                 with pd.ExcelWriter(buf, engine='xlsxwriter') as wr:
-                    results['summary'].to_excel(wr, sheet_name='Summary', index=False)
-                    results['top_items'].to_excel(wr, sheet_name='Rankings', index=False)
+                    df_breakdown.to_excel(wr, sheet_name='Category Summary', index=False)
+                    df_drill.to_excel(wr, sheet_name='Price-wise Category', index=False)
                 
                 fname = f"Sales_Report_{results['timeframe']}.xlsx"
                 st.download_button("📥 Download Report", data=buf.getvalue(), file_name=fname)
