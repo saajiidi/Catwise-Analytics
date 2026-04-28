@@ -17,7 +17,7 @@ CATEGORY_MAPPING = {
     'Boxer': ['boxer'],
     'Tank Top': ['tank top', 'tanktop', 'tank', 'top'],
     'Jeans': ['jeans'],
-    'Executive Formal Shirt':['executive', 'formal'],
+    'Formal Shirt':['executive', 'formal'],
     'Denim Shirt': ['denim'],
     'Flannel Shirt': ['flannel'],
     'Polo Shirt': ['polo'],
